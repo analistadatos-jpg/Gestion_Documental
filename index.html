@@ -72,7 +72,6 @@
                     <input type="date" id="input-fecha" onchange="calcularDiasGestionAutomatico()" required class="w-full border border-slate-300 rounded p-2">
                 </div>
 
-                <!-- DESPLEGABLE: Tipo de Unidad -->
                 <div>
                     <label class="block font-medium text-slate-600 mb-1">Tipo de Unidad / N° Cajas</label>
                     <select id="input-unidad" required class="w-full border border-slate-300 rounded p-2 bg-white font-semibold">
@@ -82,7 +81,6 @@
                     </select>
                 </div>
 
-                <!-- DESPLEGABLE: Proceso / Subproceso -->
                 <div>
                     <label class="block font-medium text-slate-600 mb-1">Proceso / Subproceso</label>
                     <select id="input-proceso" required class="w-full border border-slate-300 rounded p-2 bg-white font-medium">
@@ -90,34 +88,15 @@
                         <option value="Comunicaciones">Comunicaciones</option>
                         <option value="Control Interno">Control Interno</option>
                         <option value="Gestión de Tecnología e Información">Gestión de Tecnología e Información</option>
-                        <optgroup label="Gestión del Talento Humano">
-                            <option value="Bienestar">Bienestar</option>
-                            <option value="SGSST">SGSST</option>
-                        </optgroup>
-                        <optgroup label="Gestión Comercial">
-                            <option value="Ventas">Ventas</option>
-                            <option value="Licitaciones">Licitaciones</option>
-                        </optgroup>
-                        <optgroup label="Gestión Financiera y Administrativa">
-                            <option value="Contabilidad">Contabilidad</option>
-                            <option value="Tesorería">Tesorería</option>
-                            <option value="Cartera">Cartera</option>
-                            <option value="Recursos Administrativos">Recursos Administrativos</option>
-                        </optgroup>
-                        <optgroup label="Gestión Operativa">
-                            <option value="Dispensación">Dispensación</option>
-                            <option value="Establecimiento Farmacéutico">Establecimiento Farmacéutico</option>
-                            <option value="Gestión de Calidad">Gestión de Calidad</option>
-                            <option value="SIAU">SIAU</option>
-                            <option value="Gestión Documental">Gestión Documental</option>
-                            <option value="Gestión de Datos e Información">Gestión de Datos e Información</option>
-                        </optgroup>
-                        <optgroup label="Gestión Logística">
-                            <option value="Gestión de Compras">Gestión de Compras</option>
-                            <option value="CEDI">CEDI</option>
-                            <option value="Gestión de Inventarios">Gestión de Inventarios</option>
-                            <option value="Parametrización">Parametrización</option>
-                        </optgroup>
+                        <option value="Bienestar">Bienestar</option>
+                        <option value="SGSST">SGSST</option>
+                        <option value="Ventas">Ventas</option>
+                        <option value="Licitaciones">Licitaciones</option>
+                        <option value="Contabilidad">Contabilidad</option>
+                        <option value="Tesorería">Tesorería</option>
+                        <option value="Cartera">Cartera</option>
+                        <option value="Dispensación">Dispensación</option>
+                        <option value="Gestión Documental">Gestión Documental</option>
                     </select>
                 </div>
 
@@ -140,20 +119,15 @@
                     </select>
                 </div>
 
-                <!-- DESPLEGABLE: Detalle / Observaciones Estado -->
-                <div class="lg:col-span-2">
+                <!-- Campo FECHA DE CIERRE -->
+                <div class="bg-emerald-50 p-2.5 rounded-lg border border-emerald-300">
+                    <label class="block font-bold text-emerald-900 mb-1">🏁 FECHA DE CIERRE (Columna O)</label>
+                    <input type="date" id="input-fecha-cierre" onchange="evaluarFormulaAlerta()" class="w-full border border-emerald-400 rounded p-2 bg-white font-semibold">
+                </div>
+
+                <div class="lg:col-span-3">
                     <label class="block font-medium text-slate-600 mb-1">Detalle / Observaciones Estado</label>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
-                        <select id="select-detalle-estado" onchange="gestionarObservacionPersonalizada()" class="w-full border border-slate-300 rounded p-2 bg-white">
-                            <option value="Pendiente revisión de folios">Pendiente revisión de folios</option>
-                            <option value="Confrontación FUID en proceso">Confrontación FUID en proceso</option>
-                            <option value="Aprobado y FUID firmado">Aprobado y FUID firmado</option>
-                            <option value="Con inconsistencias / Faltan folios">Con inconsistencias / Faltan folios</option>
-                            <option value="Documentación archivada definitivamente">Documentación archivada definitivamente</option>
-                            <option value="OTRO">Otro / Escribir detalle...</option>
-                        </select>
-                        <input type="text" id="input-detalle-personalizado" placeholder="Escriba la observación..." class="hidden w-full border border-slate-300 rounded p-2 bg-white">
-                    </div>
+                    <input type="text" id="input-detalle-estado" placeholder="Escriba el detalle..." class="w-full border border-slate-300 rounded p-2 bg-white">
                 </div>
 
                 <div class="bg-blue-50 p-2.5 rounded-lg border border-blue-300">
@@ -162,12 +136,12 @@
                 </div>
 
                 <div class="bg-amber-50 p-2.5 rounded-lg border border-amber-300 lg:col-span-2">
-                    <label class="block font-bold text-amber-900 mb-1">🚨 ALERTA VENCIMIENTO (Fórmula C2)</label>
+                    <label class="block font-bold text-amber-900 mb-1">🚨 ALERTA VENCIMIENTO</label>
                     <input type="text" id="input-alerta" readonly class="w-full border border-amber-400 rounded p-2 bg-white font-bold text-slate-900 focus:outline-none">
                 </div>
 
                 <div class="lg:col-span-1 flex items-end">
-                    <button type="submit" id="btn-guardar" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold p-2 rounded shadow transition flex items-center justify-center">
+                    <button type="submit" id="btn-guardar" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold p-2.5 rounded shadow transition flex items-center justify-center">
                         <i data-lucide="plus-circle" class="w-4 h-4 mr-2"></i> Guardar en Drive
                     </button>
                 </div>
@@ -198,11 +172,12 @@
                             <th class="px-3 py-2 bg-blue-100 text-slate-800">Detalle Estado</th>
                             <th class="px-3 py-2 bg-blue-100 text-slate-800 text-center">Días</th>
                             <th class="px-3 py-2 bg-blue-100 text-slate-800 text-center">Alerta Vencimiento</th>
+                            <th class="px-3 py-2 bg-emerald-800 text-white text-center">Fecha Cierre</th>
                         </tr>
                     </thead>
                     <tbody id="tabla-body" class="divide-y divide-slate-200 bg-white">
                         <tr id="row-loading">
-                            <td colspan="14" class="px-4 py-8 text-center text-slate-500 font-bold">
+                            <td colspan="15" class="px-4 py-8 text-center text-slate-500 font-bold">
                                 🔄 Sincronizando datos con Google Sheets...
                             </td>
                         </tr>
@@ -250,31 +225,8 @@
             cargarDatosDesdeDrive();
         });
 
-        function gestionarObservacionPersonalizada() {
-            const select = document.getElementById('select-detalle-estado');
-            const inputCustom = document.getElementById('input-detalle-personalizado');
-
-            if (select.value === "OTRO") {
-                inputCustom.classList.remove('hidden');
-                inputCustom.required = true;
-            } else {
-                inputCustom.classList.add('hidden');
-                inputCustom.required = false;
-                inputCustom.value = '';
-            }
-        }
-
-        function obtenerDetalleEstadoFinal() {
-            const selectValue = document.getElementById('select-detalle-estado').value;
-            if (selectValue === "OTRO") {
-                return document.getElementById('input-detalle-personalizado').value || "Sin observaciones";
-            }
-            return selectValue;
-        }
-
         function calcularDiasGestionAutomatico() {
             const fechaRecibidoStr = document.getElementById('input-fecha').value;
-
             if (fechaRecibidoStr) {
                 const [yyyy, mm, dd] = fechaRecibidoStr.split('-').map(Number);
                 const fechaRecibido = new Date(yyyy, mm - 1, dd);
@@ -286,16 +238,16 @@
             } else {
                 document.getElementById('input-dias').value = 0;
             }
-
             evaluarFormulaAlerta();
         }
 
         function evaluarFormulaAlerta() {
             const estadoGest = document.getElementById('input-estado').value;
+            const fechaCierre = document.getElementById('input-fecha-cierre').value;
             const dias = Number(document.getElementById('input-dias').value || 0);
             const alertaInput = document.getElementById('input-alerta');
 
-            if (estadoGest === "Archivado Definitivo") {
+            if (fechaCierre || estadoGest === "Archivado Definitivo") {
                 alertaInput.value = "✅ Cerrado";
             } else if (dias >= 6) {
                 alertaInput.value = "🔴 Vencido";
@@ -327,7 +279,7 @@
             tbody.innerHTML = '';
 
             if (!registros || !Array.isArray(registros) || registros.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="14" class="p-4 text-center text-slate-400 font-bold">Sin registros guardados en Drive.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="15" class="p-4 text-center text-slate-400 font-bold">Sin registros guardados en Drive.</td></tr>`;
                 document.getElementById('contador-registros').innerText = "0 registros";
                 return;
             }
@@ -337,7 +289,13 @@
 
             [...registros].reverse().forEach(r => {
                 const tr = document.createElement('tr');
-                tr.className = "hover:bg-slate-50 transition border-b border-slate-200 divide-x divide-slate-100";
+                const esCerrado = (r.alerta && r.alerta.includes("Cerrado")) || (r.fechaCierre && r.fechaCierre.trim() !== "");
+                
+                // Color verde tenue para toda la fila si está cerrado
+                tr.className = esCerrado 
+                    ? "bg-emerald-50 hover:bg-emerald-100 transition border-b border-emerald-200 divide-x divide-emerald-100 text-emerald-950 font-medium" 
+                    : "hover:bg-slate-50 transition border-b border-slate-200 divide-x divide-slate-100";
+
                 tr.innerHTML = `
                     <td class="px-3 py-2 font-mono font-bold text-indigo-600">${r.radicado || ''}</td>
                     <td class="px-3 py-2 font-medium">${r.cliente || ''}</td>
@@ -348,11 +306,12 @@
                     <td class="px-3 py-2 font-semibold">${r.unidad || ''}</td>
                     <td class="px-3 py-2">${r.series || ''}</td>
                     <td class="px-3 py-2 text-center font-bold text-slate-800">${r.cantidad ? Number(r.cantidad).toLocaleString() : '0'}</td>
-                    <td class="px-3 py-2 font-bold text-emerald-800 bg-emerald-50">${r.responsable || ''}</td>
+                    <td class="px-3 py-2 font-bold text-emerald-800">${r.responsable || ''}</td>
                     <td class="px-3 py-2"><span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-semibold">${r.estado || ''}</span></td>
                     <td class="px-3 py-2 text-slate-600">${r.detalleEstado || ''}</td>
-                    <td class="px-3 py-2 text-center font-bold text-blue-900 bg-blue-50">${r.dias || '0'}</td>
+                    <td class="px-3 py-2 text-center font-bold text-blue-900">${r.dias || '0'}</td>
                     <td class="px-3 py-2 text-center font-bold">${r.alerta || ''}</td>
+                    <td class="px-3 py-2 text-center font-semibold text-emerald-900">${r.fechaCierre || ''}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -378,9 +337,10 @@
                 cantidad: document.getElementById('input-cantidad').value,
                 responsable: document.getElementById('input-responsable').value,
                 estado: document.getElementById('input-estado').value,
-                detalleEstado: obtenerDetalleEstadoFinal(),
+                detalleEstado: document.getElementById('input-detalle-estado').value,
                 dias: document.getElementById('input-dias').value,
-                alerta: document.getElementById('input-alerta').value
+                alerta: document.getElementById('input-alerta').value,
+                fechaCierre: document.getElementById('input-fecha-cierre').value
             };
 
             fetch(API_URL, {
@@ -393,13 +353,15 @@
                 btn.disabled = false;
                 btn.innerHTML = `<i data-lucide="plus-circle" class="w-4 h-4 mr-2"></i> Guardar en Drive`;
                 lucide.createIcons();
-                contadorSecuencia++;
-                generarRadicadoInmediato();
-                document.getElementById('input-cantidad').value = '';
-                document.getElementById('input-detalle-personalizado').value = '';
-                calcularDiasGestionAutomatico();
                 
-                setTimeout(cargarDatosDesdeDrive, 2000);
+                // Limpiar campos
+                document.getElementById('input-series').value = '';
+                document.getElementById('input-cantidad').value = '';
+                document.getElementById('input-detalle-estado').value = '';
+                document.getElementById('input-fecha-cierre').value = '';
+                
+                // Recargar los datos desde Drive tras guardar
+                setTimeout(cargarDatosDesdeDrive, 1500);
             })
             .catch(err => {
                 alert("Error al enviar los datos.");
