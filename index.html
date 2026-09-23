@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control de Transferencias Documentales</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+</head>
+<body class="bg-slate-100 text-slate-800 font-sans p-4 min-h-screen">
+
+    <div class="max-w-7xl mx-auto space-y-6">
+
+        <!-- Encabezado -->
+        <div class="bg-slate-900 text-white p-4 rounded-xl shadow-md flex justify-between items-center">
+            <div class="flex items-center space-x-3">
+                <div class="bg-emerald-600 p-2 rounded-lg">
+                    <i data-lucide="shield-alert" class="w-6 h-6 text-white"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-base md:text-lg">CONTROL DE TRANSFERENCIAS DOCUMENTALES AL ARCHIVO CENTRAL</h1>
+                    <p class="text-xs text-slate-400">Pestaña: <span class="text-emerald-400 font-bold">Pruebas</span> | Cálculo Automático de Días</p>
+                </div>
+            </div>
+            <button onclick="cargarDatosDesdeDrive()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-sm">
+                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 mr-1.5"></i> Sincronizar
+            </button>
+        </div>
+
+        <!-- Formulario de Registro -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
+            <form id="transfer-form" onsubmit="registrarEnDrive(event)" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+                
+                <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                    <label class="block font-bold text-slate-700 mb-1">⚡ CONSECUTIVO / RADICADO</label>
+                    <input type="text" id="input-radicado" readonly class="w-full border border-slate-300 rounded p-2 bg-white font-mono font-bold text-indigo-700 focus:outline-none">
+                </div>
+
+                <div class="bg-indigo-50 p-2.5 rounded-lg border border-indigo-200">
+                    <label class="block font-bold text-indigo-900 mb-1">🌐 ESTACIÓN / DIRECCIÓN IP</label>
+                    <select id="select-ip-equipo" onchange="actualizarResponsablePorIP()" class="w-full border border-indigo-300 rounded p-2 bg-white font-mono font-bold text-indigo-800 focus:outline-none">
+                        <option value="192.168.1.10">IP: 192.168.1.10 (Equipo 1)</option>
+                        <option value="192.168.1.11">IP: 192.168.1.11 (Equipo 2)</option>
+                        <option value="192.168.1.12">IP: 192.168.1.12 (Equipo 3)</option>
+                    </select>
+                </div>
+
+                <div class="bg-emerald-50 p-2.5 rounded-lg border border-emerald-200">
+                    <label class="block font-bold text-emerald-900 mb-1">👤 RESPONSABLE ARCHIVO CENTRAL</label>
+                    <input type="text" id="input-responsable" readonly class="w-full border border-emerald-300 rounded p-2 bg-white font-bold text-emerald-800 focus:outline-none">
+                </div>
+
+                <div class="bg-yellow-50 p-2.5 rounded-lg border border-yellow-300">
+                    <label class="block font-bold text-slate-800 mb-1">📍 MUNICIPIO DE ORIGEN</label>
+                    <select id="input-municipio" onchange="autocompletarPorMunicipio()" required class="w-full border border-yellow-400 rounded p-2 bg-white font-semibold text-slate-900 focus:outline-none">
+                        <option value="">-- Seleccionar Municipio --</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block font-medium text-slate-600 mb-1">Funcionario que Entrega (D.T.)</label>
+                    <input type="text" id="input-funcionario" readonly class="w-full border border-slate-300 rounded p-2 bg-slate-50 font-semibold text-slate-800">
+                </div>
+
+                <div>
+                    <label class="block font-medium text-slate-600 mb-1">Cliente / Dispensario</label>
+                    <input type="text" id="input-cliente" readonly class="w-full border border-slate-300 rounded p-2 bg-slate-50 text-slate-700">
+                </div>
+
+                <div>
+                    <label class="block font-medium text-slate-600 mb-1">Fecha de Recibido</label>
+                    <input type="date" id="input-fecha" onchange="calcularDiasGestionAutomatico()" required class="w-full border border-slate-300 rounded p-2">
+                </div>
+
+                <div>
+                    <label class="block font-medium text-slate-600 mb-1">Tipo de Unidad / N° Cajas</label>
+                    <input type="text" id="input-unidad" readonly class="w-full border border-slate-300 rounded p-2 bg-slate-50 text-slate-700">
+                </div>
+
+                <div>
+                    <label class="block font-medium text-slate-600 mb-1">Proceso / Subproceso</label>
+                    <select id="input-proceso" class="w-full border border-slate-300 rounded p-2">
+                        <option value="Dispensación">Dispensación</option>
+                        <option value="Gestión Operativa">Gestión Operativa</option>
+                        <option value="Administrativo">Administrativo</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block font-medium text-slate-600 mb-1">Series/Subseries Documental</label>
+                    <input type="text" id="input-series" required placeholder="Ej: Fórmulas y Facturas" class="w-full border border-slate-300 rounded p-2">
+                </div>
+
+                <div>
+                    <label class="block font-medium text-slate-600 mb-1">Cantidad (Unidades/Folios)</label>
+                    <input type="number" id="input-cantidad" required min="1" placeholder="0" class="w-full border border-slate-300 rounded p-2 font-bold text-slate-800">
+                </div>
+
+                <div>
+                    <label class="block font-medium text-slate-600 mb-1">Estado de Gestión (Columna K)</label>
+                    <select id="input-estado" onchange="gestionarCambioEstado()" class="w-full border border-slate-300 rounded p-2 font-semibold">
+                        <option value="Por Verificar">Por Verificar</option>
+                        <option value="En Confrontacion Fuid">En Confrontación FUID</option>
+                        <option value="Archivado Definitivo">Archivado Definitivo (Cierre)</option>
+                    </select>
+                </div>
+
+                <!-- DÍAS EN GESTIÓN (AUTOMÁTICO Y BLOQUEADO) -->
+                <div class="bg-blue-50 p-2.5 rounded-lg border border-blue-300">
+                    <label class="block font-bold text-blue-900 mb-1">⏱️ DÍAS EN GESTIÓN (Automático)</label>
+                    <input type="number" id="input-dias" readonly class="w-full border border-blue-400 rounded p-2 bg-white font-bold text-blue-900 focus:outline-none">
+                </div>
+
+                <!-- ALERTA VENCIMIENTO (AUTOMÁTICA Y BLOQUEADA) -->
+                <div class="bg-amber-50 p-2.5 rounded-lg border border-amber-300 lg:col-span-2">
+                    <label class="block font-bold text-amber-900 mb-1">🚨 ALERTA VENCIMIENTO (Fórmula Automática)</label>
+                    <input type="text" id="input-alerta" readonly class="w-full border border-amber-400 rounded p-2 bg-white font-bold text-slate-900 focus:outline-none">
+                </div>
+
+                <div class="lg:col-span-1 flex items-end">
+                    <button type="submit" id="btn-guardar" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold p-2 rounded shadow transition flex items-center justify-center">
+                        <i data-lucide="plus-circle" class="w-4 h-4 mr-2"></i> Guardar en Drive
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Tabla Matriz -->
+        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="p-3 bg-slate-800 text-white text-xs font-bold flex justify-between items-center">
+                <span>MATRIZ EN TIEMPO REAL - HOJA: PRUEBAS</span>
+                <span id="contador-registros" class="text-slate-300 font-normal">Cargando...</span>
+            </div>
+            <div class="overflow-x-auto">
+                <table class="w-full border-collapse text-left whitespace-nowrap text-[11px]">
+                    <thead>
+                        <tr class="bg-emerald-700 text-white font-bold divide-x divide-emerald-600">
+                            <th class="px-3 py-2 bg-emerald-800">Consecutivo / Radicado</th>
+                            <th class="px-3 py-2 bg-yellow-300 text-slate-900">Cliente</th>
+                            <th class="px-3 py-2 bg-yellow-300 text-slate-900">Fecha Recibido</th>
+                            <th class="px-3 py-2 bg-yellow-300 text-slate-900">Proceso</th>
+                            <th class="px-3 py-2 bg-yellow-300 text-slate-900">Funcionario Entrega</th>
+                            <th class="px-3 py-2 bg-yellow-300 text-slate-900">Municipio</th>
+                            <th class="px-3 py-2 bg-yellow-300 text-slate-900">Unidad</th>
+                            <th class="px-3 py-2 bg-blue-100 text-slate-800">Series/Subseries</th>
+                            <th class="px-3 py-2 bg-blue-100 text-slate-800 text-center">Cant.</th>
+                            <th class="px-3 py-2 bg-emerald-800 text-white">Responsable Archivo</th>
+                            <th class="px-3 py-2 bg-blue-100 text-slate-800">Estado de Gestión</th>
+                            <th class="px-3 py-2 bg-blue-100 text-slate-800 text-center">Días</th>
+                            <th class="px-3 py-2 bg-blue-100 text-slate-800 text-center">Alerta Vencimiento</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tabla-body" class="divide-y divide-slate-200 bg-white">
+                        <tr id="row-loading">
+                            <td colspan="13" class="px-4 py-8 text-center text-slate-500 font-bold">
+                                🔄 Sincronizando datos...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        let contadorSecuencia = 1;
+        let diasCierreCongelados = null; // Almacena los días finales al momento del cierre
+
+        const mapaIPResponsables = {
+            "192.168.1.10": "Ayda Matabajoy A.",
+            "192.168.1.11": "Stiven Quintana L.",
+            "192.168.1.12": "Cristian Camilo Peña"
+        };
+
+        const farmaciasData = {
+            "ALMAGUER": { dispensario: "DISPENSARIO MENNAR ALMAGUER 1", director: "LUZ ENEIRA PALECHOR", unidad: "Sobre (1 Caja)" },
+            "ARGELIA": { dispensario: "DISPENSARIO MENNAR ARGELIA 1", director: "ANDRES DAZA GARZON", unidad: "Sobre (1 Caja)" },
+            "BALBOA": { dispensario: "DISPENSARIO MENNAR BALBOA 1", director: "CRISTIAN DAVID ZUÑIGA SAMBONI", unidad: "Sobre (1 Caja)" },
+            "CALDONO": { dispensario: "DISPENSARIO MENNAR CALDONO 1", director: "LUISA ALEJANDRA RAMIREZ VALENCIA", unidad: "Sobre (1 Caja)" },
+            "CORINTO": { dispensario: "DISPENSARIO MENNAR CORINTO 1", director: "GUSTAVO GIRONZA BONILLA", unidad: "Caja (2 Cajas)" },
+            "MORALES": { dispensario: "DISPENSARIO MENNAR MORALES 1", director: "VIVIAN ASTRID ZUÑIGA OCAMPO", unidad: "Caja (2 Cajas)" },
+            "POPAYAN FOMAG": { dispensario: "DISPENSARIO MENNAR POPAYAN FOMAG", director: "ANGELA VIVIANA PALECHOR", unidad: "Caja (5 Cajas)" },
+            "SANTANDER DE Q": { dispensario: "DISPENSARIO MENNAR SANTANDER DE Q 1", director: "GLEYDIN MARTINEZ MINA", unidad: "Caja (4 Cajas)" },
+            "TIMBIO": { dispensario: "DISPENSARIO MENNAR TIMBIO 1", director: "CAROL JULIETH DIAZ BURBANO", unidad: "Caja (3 Cajas)" }
+        };
+
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            const selectMun = document.getElementById('input-municipio');
+            Object.keys(farmaciasData).sort().forEach(m => {
+                selectMun.innerHTML += `<option value="${m}">${m}</option>`;
+            });
+
+            document.getElementById('input-fecha').valueAsDate = new Date();
+            generarRadicadoInmediato();
+            actualizarResponsablePorIP();
+            calcularDiasGestionAutomatico();
+            cargarDatosDesdeDrive();
+        });
+
+        // CÁLCULO AUTOMÁTICO DE DÍAS EN GESTIÓN COMPARANDO CON LA FECHA ACTUAL
+        function calcularDiasGestionAutomatico() {
+            const fechaRecibidoStr = document.getElementById('input-fecha').value;
+            const estadoActual = document.getElementById('input-estado').value;
+
+            if (fechaRecibidoStr) {
+                // Dividir fecha manualmente para evitar descalibres por zona horaria
+                const [yyyy, mm, dd] = fechaRecibidoStr.split('-').map(Number);
+                const fechaRecibido = new Date(yyyy, mm - 1, dd);
+                const hoy = new Date();
+                hoy.setHours(0, 0, 0, 0);
+
+                const diffTime = hoy - fechaRecibido;
+                const diffDays = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
+
+                if (estadoActual === "Archivado Definitivo") {
+                    // Si se cierra, congelamos el valor calculado en ese momento
+                    if (diasCierreCongelados === null) {
+                        diasCierreCongelados = diffDays;
+                    }
+                    document.getElementById('input-dias').value = diasCierreCongelados;
+                } else {
+                    // Si no está cerrado, se resetea la congelación y se calcula contra el día de hoy
+                    diasCierreCongelados = null;
+                    document.getElementById('input-dias').value = diffDays;
+                }
+            } else {
+                document.getElementById('input-dias').value = 0;
+            }
+
+            evaluarFormulaAlerta();
+        }
+
+        // CONTROL DEL CAMBIO DE ESTADO
+        function gestionarCambioEstado() {
+            const estado = document.getElementById('input-estado').value;
+            if (estado !== "Archivado Definitivo") {
+                diasCierreCongelados = null;
+            }
+            calcularDiasGestionAutomatico();
+        }
+
+        // EVALUACIÓN DE ALERTA SEGÚN LA FÓRMULA LÓGICA
+        function evaluarFormulaAlerta() {
+            const dias = Number(document.getElementById('input-dias').value || 0);
+            const estado = document.getElementById('input-estado').value;
+            const alertaInput = document.getElementById('input-alerta');
+
+            if (estado === "Archivado Definitivo") {
+                alertaInput.value = "✅ Cerrado";
+            } else if (dias >= 6) {
+                alertaInput.value = "🔴 Vencido";
+            } else if (dias >= 5) {
+                alertaInput.value = "🟡 Próximo a vencer";
+            } else {
+                alertaInput.value = "🟢 A Tiempo";
+            }
+        }
+
+        function generarRadicadoInmediato() {
+            const numFormateado = String(contadorSecuencia).padStart(3, '0');
+            document.getElementById('input-radicado').value = `RAD-2026-${numFormateado}`;
+        }
+
+        function cargarDatosDesdeDrive() {
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run
+                    .withSuccessHandler(renderTablaDesdeDrive)
+                    .obtenerDatosDrive();
+            }
+        }
+
+        function renderTablaDesdeDrive(registros) {
+            const tbody = document.getElementById('tabla-body');
+            tbody.innerHTML = '';
+
+            if (!registros || registros.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="13" class="p-4 text-center text-slate-400">Sin registros guardados.</td></tr>`;
+                document.getElementById('contador-registros').innerText = "0 registros";
+                return;
+            }
+
+            contadorSecuencia = registros.length + 1;
+            generarRadicadoInmediato();
+
+            registros.reverse().forEach(r => {
+                const tr = document.createElement('tr');
+                tr.className = "hover:bg-slate-50 transition border-b border-slate-200 divide-x divide-slate-100";
+                tr.innerHTML = `
+                    <td class="px-3 py-2 font-mono font-bold text-indigo-600">${r.radicado}</td>
+                    <td class="px-3 py-2 font-medium">${r.cliente}</td>
+                    <td class="px-3 py-2">${r.fecha}</td>
+                    <td class="px-3 py-2">${r.proceso}</td>
+                    <td class="px-3 py-2 font-semibold text-slate-800">${r.funcionario}</td>
+                    <td class="px-3 py-2 font-bold text-emerald-700">${r.municipio}</td>
+                    <td class="px-3 py-2">${r.unidad}</td>
+                    <td class="px-3 py-2">${r.series}</td>
+                    <td class="px-3 py-2 text-center font-bold text-slate-800">${Number(r.cantidad).toLocaleString()}</td>
+                    <td class="px-3 py-2 font-bold text-emerald-800 bg-emerald-50">${r.responsable}</td>
+                    <td class="px-3 py-2"><span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded">${r.estado}</span></td>
+                    <td class="px-3 py-2 text-center font-bold text-blue-900 bg-blue-50">${r.dias}</td>
+                    <td class="px-3 py-2 text-center font-bold">${r.alerta}</td>
+                `;
+                tbody.appendChild(tr);
+            });
+
+            document.getElementById('contador-registros').innerText = `${registros.length} registro(s) en Drive`;
+        }
+
+        function registrarEnDrive(e) {
+            e.preventDefault();
+            const btn = document.getElementById('btn-guardar');
+            btn.disabled = true;
+            btn.innerText = "Guardando...";
+
+            const nuevoRegistro = {
+                radicado: document.getElementById('input-radicado').value,
+                cliente: document.getElementById('input-cliente').value,
+                fecha: document.getElementById('input-fecha').value,
+                proceso: document.getElementById('input-proceso').value,
+                funcionario: document.getElementById('input-funcionario').value,
+                municipio: document.getElementById('input-municipio').value,
+                unidad: document.getElementById('input-unidad').value,
+                series: document.getElementById('input-series').value,
+                cantidad: document.getElementById('input-cantidad').value,
+                responsable: document.getElementById('input-responsable').value,
+                estado: document.getElementById('input-estado').value,
+                dias: document.getElementById('input-dias').value,
+                alerta: document.getElementById('input-alerta').value
+            };
+
+            const tbody = document.getElementById('tabla-body');
+            const tr = document.createElement('tr');
+            tr.className = "hover:bg-slate-50 transition border-b border-slate-200 divide-x divide-slate-100 bg-emerald-50";
+            tr.innerHTML = `
+                <td class="px-3 py-2 font-mono font-bold text-indigo-600">${nuevoRegistro.radicado}</td>
+                <td class="px-3 py-2 font-medium">${nuevoRegistro.cliente}</td>
+                <td class="px-3 py-2">${nuevoRegistro.fecha}</td>
+                <td class="px-3 py-2">${nuevoRegistro.proceso}</td>
+                <td class="px-3 py-2 font-semibold text-slate-800">${nuevoRegistro.funcionario}</td>
+                <td class="px-3 py-2 font-bold text-emerald-700">${nuevoRegistro.municipio}</td>
+                <td class="px-3 py-2">${nuevoRegistro.unidad}</td>
+                <td class="px-3 py-2">${nuevoRegistro.series}</td>
+                <td class="px-3 py-2 text-center font-bold text-slate-800">${Number(nuevoRegistro.cantidad).toLocaleString()}</td>
+                <td class="px-3 py-2 font-bold text-emerald-800 bg-emerald-50">${nuevoRegistro.responsable}</td>
+                <td class="px-3 py-2"><span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded">${nuevoRegistro.estado}</span></td>
+                <td class="px-3 py-2 text-center font-bold text-blue-900 bg-blue-50">${nuevoRegistro.dias}</td>
+                <td class="px-3 py-2 text-center font-bold">${nuevoRegistro.alerta}</td>
+            `;
+            tbody.insertBefore(tr, tbody.firstChild);
+
+            if (typeof google !== 'undefined' && google.script) {
+                google.script.run
+                    .withSuccessHandler(res => {
+                        btn.disabled = false;
+                        btn.innerHTML = `<i data-lucide="plus-circle" class="w-4 h-4 mr-2"></i> Guardar en Drive`;
+                        lucide.createIcons();
+                        contadorSecuencia++;
+                        generarRadicadoInmediato();
+                        document.getElementById('input-cantidad').value = '';
+                        diasCierreCongelados = null;
+                        calcularDiasGestionAutomatico();
+                    })
+                    .guardarRegistroDrive(nuevoRegistro);
+            }
+        }
+
+        function actualizarResponsablePorIP() {
+            const ipSeleccionada = document.getElementById('select-ip-equipo').value;
+            const resp = mapaIPResponsables[ipSeleccionada] || "Responsable no asignado";
+            document.getElementById('input-responsable').value = resp;
+        }
+
+        function autocompletarPorMunicipio() {
+            const munKey = document.getElementById('input-municipio').value;
+            const data = farmaciasData[munKey];
+
+            if (data) {
+                document.getElementById('input-funcionario').value = data.director;
+                document.getElementById('input-cliente').value = data.dispensario;
+                document.getElementById('input-unidad').value = data.unidad;
+            } else {
+                document.getElementById('input-funcionario').value = '';
+                document.getElementById('input-cliente').value = '';
+                document.getElementById('input-unidad').value = '';
+            }
+        }
+    </script>
+</body>
+</html>
