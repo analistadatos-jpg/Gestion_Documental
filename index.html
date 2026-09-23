@@ -31,6 +31,16 @@
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
             <form id="transfer-form" onsubmit="registrarEnDrive(event)" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
                 
+                <!-- CONTRATO (AL INICIO) -->
+                <div class="bg-purple-50 p-2.5 rounded-lg border border-purple-300">
+                    <label class="block font-bold text-purple-900 mb-1">📋 CONTRATO</label>
+                    <select id="input-contrato" required class="w-full border border-purple-400 rounded p-2 bg-white font-bold text-purple-900 focus:outline-none">
+                        <option value="">-- Seleccionar Contrato --</option>
+                        <option value="NUEVA EPS">NUEVA EPS</option>
+                        <option value="FOMAG">FOMAG</option>
+                    </select>
+                </div>
+
                 <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
                     <label class="block font-bold text-slate-700 mb-1">⚡ CONSECUTIVO / RADICADO</label>
                     <input type="text" id="input-radicado" readonly class="w-full border border-slate-300 rounded p-2 bg-white font-mono font-bold text-indigo-700 focus:outline-none">
@@ -68,7 +78,7 @@
                 </div>
 
                 <div>
-                    <label class="block font-medium text-slate-600 mb-1">Fecha de Recibido (Columna C)</label>
+                    <label class="block font-medium text-slate-600 mb-1">Fecha de Recibido (Columna D)</label>
                     <input type="date" id="input-fecha" onchange="calcularDiasGestionAutomatico()" required class="w-full border border-slate-300 rounded p-2">
                 </div>
 
@@ -119,9 +129,9 @@
                     </select>
                 </div>
 
-                <!-- Campo FECHA DE CIERRE -->
+                <!-- FECHA DE CIERRE (HABILITADA OPCIONALMENTE) -->
                 <div class="bg-emerald-50 p-2.5 rounded-lg border border-emerald-300">
-                    <label class="block font-bold text-emerald-900 mb-1">🏁 FECHA DE CIERRE (Columna O)</label>
+                    <label class="block font-bold text-emerald-900 mb-1">🏁 FECHA DE CIERRE (Columna P)</label>
                     <input type="date" id="input-fecha-cierre" onchange="evaluarFormulaAlerta()" class="w-full border border-emerald-400 rounded p-2 bg-white font-semibold">
                 </div>
 
@@ -131,7 +141,7 @@
                 </div>
 
                 <div class="bg-blue-50 p-2.5 rounded-lg border border-blue-300">
-                    <label class="block font-bold text-blue-900 mb-1">⏱️ DÍAS EN GESTIÓN (M)</label>
+                    <label class="block font-bold text-blue-900 mb-1">⏱️ DÍAS EN GESTIÓN (N)</label>
                     <input type="number" id="input-dias" readonly class="w-full border border-blue-400 rounded p-2 bg-white font-bold text-blue-900 focus:outline-none">
                 </div>
 
@@ -158,6 +168,7 @@
                 <table class="w-full border-collapse text-left whitespace-nowrap text-[11px]">
                     <thead>
                         <tr class="bg-emerald-700 text-white font-bold divide-x divide-emerald-600">
+                            <th class="px-3 py-2 bg-purple-800 text-white">Contrato</th>
                             <th class="px-3 py-2 bg-emerald-800">Consecutivo / Radicado</th>
                             <th class="px-3 py-2 bg-yellow-300 text-slate-900">Cliente</th>
                             <th class="px-3 py-2 bg-yellow-300 text-slate-900">Fecha Recibido</th>
@@ -177,7 +188,7 @@
                     </thead>
                     <tbody id="tabla-body" class="divide-y divide-slate-200 bg-white">
                         <tr id="row-loading">
-                            <td colspan="15" class="px-4 py-8 text-center text-slate-500 font-bold">
+                            <td colspan="16" class="px-4 py-8 text-center text-slate-500 font-bold">
                                 🔄 Sincronizando datos con Google Sheets...
                             </td>
                         </tr>
@@ -279,7 +290,7 @@
             tbody.innerHTML = '';
 
             if (!registros || !Array.isArray(registros) || registros.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="15" class="p-4 text-center text-slate-400 font-bold">Sin registros guardados en Drive.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="16" class="p-4 text-center text-slate-400 font-bold">Sin registros guardados en Drive.</td></tr>`;
                 document.getElementById('contador-registros').innerText = "0 registros";
                 return;
             }
@@ -291,12 +302,12 @@
                 const tr = document.createElement('tr');
                 const esCerrado = (r.alerta && r.alerta.includes("Cerrado")) || (r.fechaCierre && r.fechaCierre.trim() !== "");
                 
-                // Color verde tenue para toda la fila si está cerrado
                 tr.className = esCerrado 
                     ? "bg-emerald-50 hover:bg-emerald-100 transition border-b border-emerald-200 divide-x divide-emerald-100 text-emerald-950 font-medium" 
                     : "hover:bg-slate-50 transition border-b border-slate-200 divide-x divide-slate-100";
 
                 tr.innerHTML = `
+                    <td class="px-3 py-2 font-bold text-purple-900 bg-purple-50/50">${r.contrato || ''}</td>
                     <td class="px-3 py-2 font-mono font-bold text-indigo-600">${r.radicado || ''}</td>
                     <td class="px-3 py-2 font-medium">${r.cliente || ''}</td>
                     <td class="px-3 py-2">${r.fecha || ''}</td>
@@ -326,6 +337,7 @@
             btn.innerText = "Guardando...";
 
             const nuevoRegistro = {
+                contrato: document.getElementById('input-contrato').value,
                 radicado: document.getElementById('input-radicado').value,
                 cliente: document.getElementById('input-cliente').value,
                 fecha: document.getElementById('input-fecha').value,
@@ -354,13 +366,12 @@
                 btn.innerHTML = `<i data-lucide="plus-circle" class="w-4 h-4 mr-2"></i> Guardar en Drive`;
                 lucide.createIcons();
                 
-                // Limpiar campos
+                document.getElementById('input-contrato').value = '';
                 document.getElementById('input-series').value = '';
                 document.getElementById('input-cantidad').value = '';
                 document.getElementById('input-detalle-estado').value = '';
                 document.getElementById('input-fecha-cierre').value = '';
                 
-                // Recargar los datos desde Drive tras guardar
                 setTimeout(cargarDatosDesdeDrive, 1500);
             })
             .catch(err => {
