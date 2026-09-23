@@ -19,7 +19,7 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-base md:text-lg">CONTROL DE TRANSFERENCIAS DOCUMENTALES AL ARCHIVO CENTRAL</h1>
-                    <p class="text-xs text-slate-400">Pestaña: <span class="text-emerald-400 font-bold">Pruebas</span> | Cálculo Automático de Días</p>
+                    <p class="text-xs text-slate-400">Pestaña: <span class="text-emerald-400 font-bold">Pruebas</span> | Conexión Drive mediante API</p>
                 </div>
             </div>
             <button onclick="cargarDatosDesdeDrive()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-sm">
@@ -96,29 +96,25 @@
                     <input type="number" id="input-cantidad" required min="1" placeholder="0" class="w-full border border-slate-300 rounded p-2 font-bold text-slate-800">
                 </div>
 
-                <!-- OPCIONES ACTUALIZADAS CON POR VERIFICAR Y EN CONFRONTACION FUID -->
                 <div>
                     <label class="block font-medium text-slate-600 mb-1">Estado de Gestión (Columna K)</label>
                     <select id="input-estado" onchange="gestionarCambioEstado()" class="w-full border border-slate-300 rounded p-2 font-semibold">
                         <option value="Por Verificar">Por Verificar</option>
-                        <option value="En Confrontacion Fuid">En Confrontacion Fuid</option>
+                        <option value="En Confrontacion Fuid">En Confrontación FUID</option>
                         <option value="Archivado Definitivo">Archivado Definitivo (Cierre)</option>
                     </select>
                 </div>
 
-                <!-- NUEVO CAMPO AGREGADO -->
                 <div>
                     <label class="block font-medium text-slate-600 mb-1">Detalle / Observaciones Estado</label>
                     <input type="text" id="input-detalle-estado" placeholder="Ej: Pendiente revisión de folios" class="w-full border border-slate-300 rounded p-2">
                 </div>
 
-                <!-- DÍAS EN GESTIÓN (AUTOMÁTICO Y BLOQUEADO) -->
                 <div class="bg-blue-50 p-2.5 rounded-lg border border-blue-300">
                     <label class="block font-bold text-blue-900 mb-1">⏱️ DÍAS EN GESTIÓN (Automático)</label>
                     <input type="number" id="input-dias" readonly class="w-full border border-blue-400 rounded p-2 bg-white font-bold text-blue-900 focus:outline-none">
                 </div>
 
-                <!-- ALERTA VENCIMIENTO (AUTOMÁTICA Y BLOQUEADA) -->
                 <div class="bg-amber-50 p-2.5 rounded-lg border border-amber-300 lg:col-span-2">
                     <label class="block font-bold text-amber-900 mb-1">🚨 ALERTA VENCIMIENTO (Fórmula Automática)</label>
                     <input type="text" id="input-alerta" readonly class="w-full border border-amber-400 rounded p-2 bg-white font-bold text-slate-900 focus:outline-none">
@@ -172,6 +168,9 @@
     </div>
 
     <script>
+        // URL de la App Web tomada directamente de la imagen
+        const API_URL = "https://script.google.com/macros/s/AKfycbxR7RCIzO2CZDI1HI84At9epB7c4q7KUl82ZGP8-iH5UNsbwwg8b7cBa_SB6-s-tWpolQ/exec";
+
         let contadorSecuencia = 1;
         let diasCierreCongelados = null;
 
@@ -217,13 +216,10 @@
                 const hoy = new Date();
                 hoy.setHours(0, 0, 0, 0);
 
-                const diffTime = hoy - fechaRecibido;
-                const diffDays = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
+                const diffDays = Math.max(0, Math.floor((hoy - fechaRecibido) / (1000 * 60 * 60 * 24)));
 
                 if (estadoActual === "Archivado Definitivo") {
-                    if (diasCierreCongelados === null) {
-                        diasCierreCongelados = diffDays;
-                    }
+                    if (diasCierreCongelados === null) diasCierreCongelados = diffDays;
                     document.getElementById('input-dias').value = diasCierreCongelados;
                 } else {
                     diasCierreCongelados = null;
@@ -237,8 +233,7 @@
         }
 
         function gestionarCambioEstado() {
-            const estado = document.getElementById('input-estado').value;
-            if (estado !== "Archivado Definitivo") {
+            if (document.getElementById('input-estado').value !== "Archivado Definitivo") {
                 diasCierreCongelados = null;
             }
             calcularDiasGestionAutomatico();
@@ -266,11 +261,10 @@
         }
 
         function cargarDatosDesdeDrive() {
-            if (typeof google !== 'undefined' && google.script) {
-                google.script.run
-                    .withSuccessHandler(renderTablaDesdeDrive)
-                    .obtenerDatosDrive();
-            }
+            fetch(API_URL)
+                .then(res => res.json())
+                .then(data => renderTablaDesdeDrive(data))
+                .catch(err => console.error("Error al obtener datos:", err));
         }
 
         function renderTablaDesdeDrive(registros) {
@@ -334,48 +328,33 @@
                 alerta: document.getElementById('input-alerta').value
             };
 
-            const tbody = document.getElementById('tabla-body');
-            const tr = document.createElement('tr');
-            tr.className = "hover:bg-slate-50 transition border-b border-slate-200 divide-x divide-slate-100 bg-emerald-50";
-            tr.innerHTML = `
-                <td class="px-3 py-2 font-mono font-bold text-indigo-600">${nuevoRegistro.radicado}</td>
-                <td class="px-3 py-2 font-medium">${nuevoRegistro.cliente}</td>
-                <td class="px-3 py-2">${nuevoRegistro.fecha}</td>
-                <td class="px-3 py-2">${nuevoRegistro.proceso}</td>
-                <td class="px-3 py-2 font-semibold text-slate-800">${nuevoRegistro.funcionario}</td>
-                <td class="px-3 py-2 font-bold text-emerald-700">${nuevoRegistro.municipio}</td>
-                <td class="px-3 py-2">${nuevoRegistro.unidad}</td>
-                <td class="px-3 py-2">${nuevoRegistro.series}</td>
-                <td class="px-3 py-2 text-center font-bold text-slate-800">${Number(nuevoRegistro.cantidad).toLocaleString()}</td>
-                <td class="px-3 py-2 font-bold text-emerald-800 bg-emerald-50">${nuevoRegistro.responsable}</td>
-                <td class="px-3 py-2"><span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded">${nuevoRegistro.estado}</span></td>
-                <td class="px-3 py-2 text-slate-600">${nuevoRegistro.detalleEstado}</td>
-                <td class="px-3 py-2 text-center font-bold text-blue-900 bg-blue-50">${nuevoRegistro.dias}</td>
-                <td class="px-3 py-2 text-center font-bold">${nuevoRegistro.alerta}</td>
-            `;
-            tbody.insertBefore(tr, tbody.firstChild);
-
-            if (typeof google !== 'undefined' && google.script) {
-                google.script.run
-                    .withSuccessHandler(res => {
-                        btn.disabled = false;
-                        btn.innerHTML = `<i data-lucide="plus-circle" class="w-4 h-4 mr-2"></i> Guardar en Drive`;
-                        lucide.createIcons();
-                        contadorSecuencia++;
-                        generarRadicadoInmediato();
-                        document.getElementById('input-cantidad').value = '';
-                        document.getElementById('input-detalle-estado').value = '';
-                        diasCierreCongelados = null;
-                        calcularDiasGestionAutomatico();
-                    })
-                    .guardarRegistroDrive(nuevoRegistro);
-            }
+            fetch(API_URL, {
+                method: 'POST',
+                mode: 'no-cors',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(nuevoRegistro)
+            })
+            .then(() => {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="plus-circle" class="w-4 h-4 mr-2"></i> Guardar en Drive`;
+                lucide.createIcons();
+                contadorSecuencia++;
+                generarRadicadoInmediato();
+                document.getElementById('input-cantidad').value = '';
+                document.getElementById('input-detalle-estado').value = '';
+                diasCierreCongelados = null;
+                calcularDiasGestionAutomatico();
+                setTimeout(cargarDatosDesdeDrive, 1500);
+            })
+            .catch(err => {
+                alert("Error al enviar los datos.");
+                btn.disabled = false;
+            });
         }
 
         function actualizarResponsablePorIP() {
             const ipSeleccionada = document.getElementById('select-ip-equipo').value;
-            const resp = mapaIPResponsables[ipSeleccionada] || "Responsable no asignado";
-            document.getElementById('input-responsable').value = resp;
+            document.getElementById('input-responsable').value = mapaIPResponsables[ipSeleccionada] || "Responsable no asignado";
         }
 
         function autocompletarPorMunicipio() {
