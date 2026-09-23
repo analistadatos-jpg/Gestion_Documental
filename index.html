@@ -204,7 +204,6 @@
             cargarDatosDesdeDrive();
         });
 
-        // Cálculo de días transcurridos entre la Fecha Recibido (C2) y HOY()
         function calcularDiasGestionAutomatico() {
             const fechaRecibidoStr = document.getElementById('input-fecha').value;
 
@@ -223,7 +222,6 @@
             evaluarFormulaAlerta();
         }
 
-        // Replica exacta de la fórmula: =SI(C2="", "", SI(C2="Archivado Definitivo", "✅ Cerrado", SI((HOY()-C2)>=6, "🔴 Vencido", SI((HOY()-C2)>=5, "🟡 Próximo a vencer", "🟢 A Tiempo"))))
         function evaluarFormulaAlerta() {
             const fechaRecibidoStr = document.getElementById('input-fecha').value;
             const dias = Number(document.getElementById('input-dias').value || 0);
@@ -248,17 +246,21 @@
         }
 
         function cargarDatosDesdeDrive() {
+            document.getElementById('contador-registros').innerText = "Cargando...";
             fetch(API_URL)
                 .then(res => res.json())
                 .then(data => renderTablaDesdeDrive(data))
-                .catch(err => console.error("Error al obtener datos:", err));
+                .catch(err => {
+                    console.error("Error al obtener datos:", err);
+                    document.getElementById('contador-registros').innerText = "Error de conexión";
+                });
         }
 
         function renderTablaDesdeDrive(registros) {
             const tbody = document.getElementById('tabla-body');
             tbody.innerHTML = '';
 
-            if (!registros || registros.length === 0) {
+            if (!registros || !Array.isArray(registros) || registros.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="14" class="p-4 text-center text-slate-400 font-bold">Sin registros guardados en Drive.</td></tr>`;
                 document.getElementById('contador-registros').innerText = "0 registros";
                 return;
@@ -267,24 +269,25 @@
             contadorSecuencia = registros.length + 1;
             generarRadicadoInmediato();
 
-            registros.reverse().forEach(r => {
+            // Clona y voltea para ver el último registro arriba
+            [...registros].reverse().forEach(r => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 transition border-b border-slate-200 divide-x divide-slate-100";
                 tr.innerHTML = `
-                    <td class="px-3 py-2 font-mono font-bold text-indigo-600">${r.radicado}</td>
-                    <td class="px-3 py-2 font-medium">${r.cliente}</td>
-                    <td class="px-3 py-2">${r.fecha}</td>
-                    <td class="px-3 py-2">${r.proceso}</td>
-                    <td class="px-3 py-2 font-semibold text-slate-800">${r.funcionario}</td>
-                    <td class="px-3 py-2 font-bold text-emerald-700">${r.municipio}</td>
-                    <td class="px-3 py-2">${r.unidad}</td>
-                    <td class="px-3 py-2">${r.series}</td>
-                    <td class="px-3 py-2 text-center font-bold text-slate-800">${Number(r.cantidad).toLocaleString()}</td>
-                    <td class="px-3 py-2 font-bold text-emerald-800 bg-emerald-50">${r.responsable}</td>
-                    <td class="px-3 py-2"><span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-semibold">${r.estado}</span></td>
+                    <td class="px-3 py-2 font-mono font-bold text-indigo-600">${r.radicado || ''}</td>
+                    <td class="px-3 py-2 font-medium">${r.cliente || ''}</td>
+                    <td class="px-3 py-2">${r.fecha || ''}</td>
+                    <td class="px-3 py-2">${r.proceso || ''}</td>
+                    <td class="px-3 py-2 font-semibold text-slate-800">${r.funcionario || ''}</td>
+                    <td class="px-3 py-2 font-bold text-emerald-700">${r.municipio || ''}</td>
+                    <td class="px-3 py-2">${r.unidad || ''}</td>
+                    <td class="px-3 py-2">${r.series || ''}</td>
+                    <td class="px-3 py-2 text-center font-bold text-slate-800">${r.cantidad ? Number(r.cantidad).toLocaleString() : '0'}</td>
+                    <td class="px-3 py-2 font-bold text-emerald-800 bg-emerald-50">${r.responsable || ''}</td>
+                    <td class="px-3 py-2"><span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-semibold">${r.estado || ''}</span></td>
                     <td class="px-3 py-2 text-slate-600">${r.detalleEstado || ''}</td>
-                    <td class="px-3 py-2 text-center font-bold text-blue-900 bg-blue-50">${r.dias}</td>
-                    <td class="px-3 py-2 text-center font-bold">${r.alerta}</td>
+                    <td class="px-3 py-2 text-center font-bold text-blue-900 bg-blue-50">${r.dias || '0'}</td>
+                    <td class="px-3 py-2 text-center font-bold">${r.alerta || ''}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -330,7 +333,9 @@
                 document.getElementById('input-cantidad').value = '';
                 document.getElementById('input-detalle-estado').value = '';
                 calcularDiasGestionAutomatico();
-                setTimeout(cargarDatosDesdeDrive, 1500);
+                
+                // Espera 2 segundos para dar tiempo a Sheets de guardar y vuelve a consultar
+                setTimeout(cargarDatosDesdeDrive, 2000);
             })
             .catch(err => {
                 alert("Error al enviar los datos.");
