@@ -107,7 +107,7 @@
 
                 <div>
                     <label class="block font-medium text-slate-600 mb-1">Detalle / Observaciones Estado</label>
-                    <input type="text" id="input-detalle-estado" placeholder="Ej: Pendiente revisión de folios" class="w-full border border-slate-300 rounded p-2">
+                    <input type="text" id="input-detalle-estado" placeholder="Ej: Pendiente revisión" class="w-full border border-slate-300 rounded p-2">
                 </div>
 
                 <div class="bg-blue-50 p-2.5 rounded-lg border border-blue-300">
@@ -168,6 +168,7 @@
     </div>
 
     <script>
+        // URL de tu Web App conectada con la hoja de Google Sheets
         const API_URL = "https://script.google.com/macros/s/AKfycbwke38o0tb5Uw3TdHjaY8VdVzmoL-n4RUmmkYd93n80aDWuO8jrCZ308g2OxEcO7zROTg/exec";
 
         let contadorSecuencia = 1;
@@ -215,10 +216,13 @@
                 const hoy = new Date();
                 hoy.setHours(0, 0, 0, 0);
 
-                const diffDays = Math.max(0, Math.floor((hoy - fechaRecibido) / (1000 * 60 * 60 * 24)));
+                const diffTime = hoy - fechaRecibido;
+                const diffDays = Math.max(0, Math.floor(diffTime / (1000 * 60 * 60 * 24)));
 
                 if (estadoActual === "Archivado Definitivo") {
-                    if (diasCierreCongelados === null) diasCierreCongelados = diffDays;
+                    if (diasCierreCongelados === null) {
+                        diasCierreCongelados = diffDays;
+                    }
                     document.getElementById('input-dias').value = diasCierreCongelados;
                 } else {
                     diasCierreCongelados = null;
@@ -232,7 +236,8 @@
         }
 
         function gestionarCambioEstado() {
-            if (document.getElementById('input-estado').value !== "Archivado Definitivo") {
+            const estado = document.getElementById('input-estado').value;
+            if (estado !== "Archivado Definitivo") {
                 diasCierreCongelados = null;
             }
             calcularDiasGestionAutomatico();
@@ -263,7 +268,10 @@
             fetch(API_URL)
                 .then(res => res.json())
                 .then(data => renderTablaDesdeDrive(data))
-                .catch(err => console.error("Error al obtener datos:", err));
+                .catch(err => {
+                    console.error("Error al obtener datos:", err);
+                    document.getElementById('tabla-body').innerHTML = `<tr><td colspan="14" class="p-4 text-center text-red-500 font-bold">Error al sincronizar datos desde Google Sheets.</td></tr>`;
+                });
         }
 
         function renderTablaDesdeDrive(registros) {
@@ -271,7 +279,7 @@
             tbody.innerHTML = '';
 
             if (!registros || registros.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="14" class="p-4 text-center text-slate-400 font-bold">Sin registros guardados en Drive.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="14" class="p-4 text-center text-slate-400 font-bold">Sin registros guardados.</td></tr>`;
                 document.getElementById('contador-registros').innerText = "0 registros";
                 return;
             }
@@ -343,7 +351,7 @@
                 document.getElementById('input-detalle-estado').value = '';
                 diasCierreCongelados = null;
                 calcularDiasGestionAutomatico();
-                setTimeout(cargarDatosDesdeDrive, 1500);
+                setTimeout(cargarDatosDesdeDrive, 1200);
             })
             .catch(err => {
                 alert("Error al enviar los datos.");
