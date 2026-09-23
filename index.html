@@ -68,7 +68,7 @@
                 </div>
 
                 <div>
-                    <label class="block font-medium text-slate-600 mb-1">Fecha de Recibido</label>
+                    <label class="block font-medium text-slate-600 mb-1">Fecha de Recibido (Columna C)</label>
                     <input type="date" id="input-fecha" onchange="calcularDiasGestionAutomatico()" required class="w-full border border-slate-300 rounded p-2">
                 </div>
 
@@ -97,11 +97,11 @@
                 </div>
 
                 <div>
-                    <label class="block font-medium text-slate-600 mb-1">Estado de Gestión (Columna K)</label>
-                    <select id="input-estado" onchange="gestionarCambioEstado()" class="w-full border border-slate-300 rounded p-2 font-semibold">
+                    <label class="block font-medium text-slate-600 mb-1">Estado de Gestión</label>
+                    <select id="input-estado" onchange="evaluarFormulaAlerta()" class="w-full border border-slate-300 rounded p-2 font-semibold">
                         <option value="Por Verificar">Por Verificar</option>
-                        <option value="En Confrontacion Fuid">En Confrontación FUID</option>
-                        <option value="Archivado Definitivo">Archivado Definitivo (Cierre)</option>
+                        <option value="En Confrontación FUID">En Confrontación FUID</option>
+                        <option value="Archivado Definitivo">Archivado Definitivo</option>
                     </select>
                 </div>
 
@@ -111,12 +111,12 @@
                 </div>
 
                 <div class="bg-blue-50 p-2.5 rounded-lg border border-blue-300">
-                    <label class="block font-bold text-blue-900 mb-1">⏱️ DÍAS EN GESTIÓN (Automático)</label>
+                    <label class="block font-bold text-blue-900 mb-1">⏱️ DÍAS EN GESTIÓN (M)</label>
                     <input type="number" id="input-dias" readonly class="w-full border border-blue-400 rounded p-2 bg-white font-bold text-blue-900 focus:outline-none">
                 </div>
 
                 <div class="bg-amber-50 p-2.5 rounded-lg border border-amber-300 lg:col-span-2">
-                    <label class="block font-bold text-amber-900 mb-1">🚨 ALERTA VENCIMIENTO (Fórmula Automática)</label>
+                    <label class="block font-bold text-amber-900 mb-1">🚨 ALERTA VENCIMIENTO (Fórmula C2)</label>
                     <input type="text" id="input-alerta" readonly class="w-full border border-amber-400 rounded p-2 bg-white font-bold text-slate-900 focus:outline-none">
                 </div>
 
@@ -157,7 +157,7 @@
                     <tbody id="tabla-body" class="divide-y divide-slate-200 bg-white">
                         <tr id="row-loading">
                             <td colspan="14" class="px-4 py-8 text-center text-slate-500 font-bold">
-                                🔄 Sincronizando datos...
+                                🔄 Sincronizando datos con Google Sheets...
                             </td>
                         </tr>
                     </tbody>
@@ -171,7 +171,6 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbwke38o0tb5Uw3TdHjaY8VdVzmoL-n4RUmmkYd93n80aDWuO8jrCZ308g2OxEcO7zROTg/exec";
 
         let contadorSecuencia = 1;
-        let diasCierreCongelados = null;
 
         const mapaIPResponsables = {
             "192.168.1.10": "Ayda Matabajoy A.",
@@ -205,7 +204,7 @@
             cargarDatosDesdeDrive();
         });
 
-        // EVALUACIÓN EXACTA SEGÚN TU FÓRMULA SOLICITADA
+        // Cálculo de días transcurridos entre la Fecha Recibido (C2) y HOY()
         function calcularDiasGestionAutomatico() {
             const fechaRecibidoStr = document.getElementById('input-fecha').value;
 
@@ -224,20 +223,15 @@
             evaluarFormulaAlerta();
         }
 
-        function gestionarCambioEstado() {
-            evaluarFormulaAlerta();
-        }
-
-        // LÓGICA DE LA FÓRMULA: =SI(C2="", "", SI(C2="Archivado Definitivo", "✅ Cerrado", SI((HOY()-C2)>=6, "🔴 Vencido", SI((HOY()-C2)>=5, "🟡 Próximo a vencer", "🟢 A Tiempo"))))
+        // Replica exacta de la fórmula: =SI(C2="", "", SI(C2="Archivado Definitivo", "✅ Cerrado", SI((HOY()-C2)>=6, "🔴 Vencido", SI((HOY()-C2)>=5, "🟡 Próximo a vencer", "🟢 A Tiempo"))))
         function evaluarFormulaAlerta() {
             const fechaRecibidoStr = document.getElementById('input-fecha').value;
-            const estado = document.getElementById('input-estado').value;
             const dias = Number(document.getElementById('input-dias').value || 0);
             const alertaInput = document.getElementById('input-alerta');
 
             if (!fechaRecibidoStr) {
                 alertaInput.value = "";
-            } else if (estado === "Archivado Definitivo") {
+            } else if (fechaRecibidoStr === "Archivado Definitivo") {
                 alertaInput.value = "✅ Cerrado";
             } else if (dias >= 6) {
                 alertaInput.value = "🔴 Vencido";
