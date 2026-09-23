@@ -72,17 +72,52 @@
                     <input type="date" id="input-fecha" onchange="calcularDiasGestionAutomatico()" required class="w-full border border-slate-300 rounded p-2">
                 </div>
 
+                <!-- DESPLEGABLE: Tipo de Unidad -->
                 <div>
                     <label class="block font-medium text-slate-600 mb-1">Tipo de Unidad / N° Cajas</label>
-                    <input type="text" id="input-unidad" readonly class="w-full border border-slate-300 rounded p-2 bg-slate-50 text-slate-700">
+                    <select id="input-unidad" required class="w-full border border-slate-300 rounded p-2 bg-white font-semibold">
+                        <option value="Caja">Caja</option>
+                        <option value="Sobre">Sobre</option>
+                        <option value="Documento">Documento</option>
+                    </select>
                 </div>
 
+                <!-- DESPLEGABLE: Proceso / Subproceso -->
                 <div>
                     <label class="block font-medium text-slate-600 mb-1">Proceso / Subproceso</label>
-                    <select id="input-proceso" class="w-full border border-slate-300 rounded p-2">
-                        <option value="Dispensación">Dispensación</option>
-                        <option value="Gestión Operativa">Gestión Operativa</option>
-                        <option value="Administrativo">Administrativo</option>
+                    <select id="input-proceso" required class="w-full border border-slate-300 rounded p-2 bg-white font-medium">
+                        <option value="">-- Seleccionar Proceso --</option>
+                        <option value="Comunicaciones">Comunicaciones</option>
+                        <option value="Control Interno">Control Interno</option>
+                        <option value="Gestión de Tecnología e Información">Gestión de Tecnología e Información</option>
+                        <optgroup label="Gestión del Talento Humano">
+                            <option value="Bienestar">Bienestar</option>
+                            <option value="SGSST">SGSST</option>
+                        </optgroup>
+                        <optgroup label="Gestión Comercial">
+                            <option value="Ventas">Ventas</option>
+                            <option value="Licitaciones">Licitaciones</option>
+                        </optgroup>
+                        <optgroup label="Gestión Financiera y Administrativa">
+                            <option value="Contabilidad">Contabilidad</option>
+                            <option value="Tesorería">Tesorería</option>
+                            <option value="Cartera">Cartera</option>
+                            <option value="Recursos Administrativos">Recursos Administrativos</option>
+                        </optgroup>
+                        <optgroup label="Gestión Operativa">
+                            <option value="Dispensación">Dispensación</option>
+                            <option value="Establecimiento Farmacéutico">Establecimiento Farmacéutico</option>
+                            <option value="Gestión de Calidad">Gestión de Calidad</option>
+                            <option value="SIAU">SIAU</option>
+                            <option value="Gestión Documental">Gestión Documental</option>
+                            <option value="Gestión de Datos e Información">Gestión de Datos e Información</option>
+                        </optgroup>
+                        <optgroup label="Gestión Logística">
+                            <option value="Gestión de Compras">Gestión de Compras</option>
+                            <option value="CEDI">CEDI</option>
+                            <option value="Gestión de Inventarios">Gestión de Inventarios</option>
+                            <option value="Parametrización">Parametrización</option>
+                        </optgroup>
                     </select>
                 </div>
 
@@ -105,9 +140,20 @@
                     </select>
                 </div>
 
-                <div>
+                <!-- DESPLEGABLE: Detalle / Observaciones Estado -->
+                <div class="lg:col-span-2">
                     <label class="block font-medium text-slate-600 mb-1">Detalle / Observaciones Estado</label>
-                    <input type="text" id="input-detalle-estado" placeholder="Ej: Pendiente revisión de folios" class="w-full border border-slate-300 rounded p-2">
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-2">
+                        <select id="select-detalle-estado" onchange="gestionarObservacionPersonalizada()" class="w-full border border-slate-300 rounded p-2 bg-white">
+                            <option value="Pendiente revisión de folios">Pendiente revisión de folios</option>
+                            <option value="Confrontación FUID en proceso">Confrontación FUID en proceso</option>
+                            <option value="Aprobado y FUID firmado">Aprobado y FUID firmado</option>
+                            <option value="Con inconsistencias / Faltan folios">Con inconsistencias / Faltan folios</option>
+                            <option value="Documentación archivada definitivamente">Documentación archivada definitivamente</option>
+                            <option value="OTRO">Otro / Escribir detalle...</option>
+                        </select>
+                        <input type="text" id="input-detalle-personalizado" placeholder="Escriba la observación..." class="hidden w-full border border-slate-300 rounded p-2 bg-white">
+                    </div>
                 </div>
 
                 <div class="bg-blue-50 p-2.5 rounded-lg border border-blue-300">
@@ -179,15 +225,15 @@
         };
 
         const farmaciasData = {
-            "ALMAGUER": { dispensario: "DISPENSARIO MENNAR ALMAGUER 1", director: "LUZ ENEIRA PALECHOR", unidad: "Sobre (1 Caja)" },
-            "ARGELIA": { dispensario: "DISPENSARIO MENNAR ARGELIA 1", director: "ANDRES DAZA GARZON", unidad: "Sobre (1 Caja)" },
-            "BALBOA": { dispensario: "DISPENSARIO MENNAR BALBOA 1", director: "CRISTIAN DAVID ZUÑIGA SAMBONI", unidad: "Sobre (1 Caja)" },
-            "CALDONO": { dispensario: "DISPENSARIO MENNAR CALDONO 1", director: "LUISA ALEJANDRA RAMIREZ VALENCIA", unidad: "Sobre (1 Caja)" },
-            "CORINTO": { dispensario: "DISPENSARIO MENNAR CORINTO 1", director: "GUSTAVO GIRONZA BONILLA", unidad: "Caja (2 Cajas)" },
-            "MORALES": { dispensario: "DISPENSARIO MENNAR MORALES 1", director: "VIVIAN ASTRID ZUÑIGA OCAMPO", unidad: "Caja (2 Cajas)" },
-            "POPAYAN FOMAG": { dispensario: "DISPENSARIO MENNAR POPAYAN FOMAG", director: "ANGELA VIVIANA PALECHOR", unidad: "Caja (5 Cajas)" },
-            "SANTANDER DE Q": { dispensario: "DISPENSARIO MENNAR SANTANDER DE Q 1", director: "GLEYDIN MARTINEZ MINA", unidad: "Caja (4 Cajas)" },
-            "TIMBIO": { dispensario: "DISPENSARIO MENNAR TIMBIO 1", director: "CAROL JULIETH DIAZ BURBANO", unidad: "Caja (3 Cajas)" }
+            "ALMAGUER": { dispensario: "DISPENSARIO MENNAR ALMAGUER 1", director: "LUZ ENEIRA PALECHOR" },
+            "ARGELIA": { dispensario: "DISPENSARIO MENNAR ARGELIA 1", director: "ANDRES DAZA GARZON" },
+            "BALBOA": { dispensario: "DISPENSARIO MENNAR BALBOA 1", director: "CRISTIAN DAVID ZUÑIGA SAMBONI" },
+            "CALDONO": { dispensario: "DISPENSARIO MENNAR CALDONO 1", director: "LUISA ALEJANDRA RAMIREZ VALENCIA" },
+            "CORINTO": { dispensario: "DISPENSARIO MENNAR CORINTO 1", director: "GUSTAVO GIRONZA BONILLA" },
+            "MORALES": { dispensario: "DISPENSARIO MENNAR MORALES 1", director: "VIVIAN ASTRID ZUÑIGA OCAMPO" },
+            "POPAYAN FOMAG": { dispensario: "DISPENSARIO MENNAR POPAYAN FOMAG", director: "ANGELA VIVIANA PALECHOR" },
+            "SANTANDER DE Q": { dispensario: "DISPENSARIO MENNAR SANTANDER DE Q 1", director: "GLEYDIN MARTINEZ MINA" },
+            "TIMBIO": { dispensario: "DISPENSARIO MENNAR TIMBIO 1", director: "CAROL JULIETH DIAZ BURBANO" }
         };
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -203,6 +249,28 @@
             calcularDiasGestionAutomatico();
             cargarDatosDesdeDrive();
         });
+
+        function gestionarObservacionPersonalizada() {
+            const select = document.getElementById('select-detalle-estado');
+            const inputCustom = document.getElementById('input-detalle-personalizado');
+
+            if (select.value === "OTRO") {
+                inputCustom.classList.remove('hidden');
+                inputCustom.required = true;
+            } else {
+                inputCustom.classList.add('hidden');
+                inputCustom.required = false;
+                inputCustom.value = '';
+            }
+        }
+
+        function obtenerDetalleEstadoFinal() {
+            const selectValue = document.getElementById('select-detalle-estado').value;
+            if (selectValue === "OTRO") {
+                return document.getElementById('input-detalle-personalizado').value || "Sin observaciones";
+            }
+            return selectValue;
+        }
 
         function calcularDiasGestionAutomatico() {
             const fechaRecibidoStr = document.getElementById('input-fecha').value;
@@ -223,13 +291,11 @@
         }
 
         function evaluarFormulaAlerta() {
-            const fechaRecibidoStr = document.getElementById('input-fecha').value;
+            const estadoGest = document.getElementById('input-estado').value;
             const dias = Number(document.getElementById('input-dias').value || 0);
             const alertaInput = document.getElementById('input-alerta');
 
-            if (!fechaRecibidoStr) {
-                alertaInput.value = "";
-            } else if (fechaRecibidoStr === "Archivado Definitivo") {
+            if (estadoGest === "Archivado Definitivo") {
                 alertaInput.value = "✅ Cerrado";
             } else if (dias >= 6) {
                 alertaInput.value = "🔴 Vencido";
@@ -269,7 +335,6 @@
             contadorSecuencia = registros.length + 1;
             generarRadicadoInmediato();
 
-            // Clona y voltea para ver el último registro arriba
             [...registros].reverse().forEach(r => {
                 const tr = document.createElement('tr');
                 tr.className = "hover:bg-slate-50 transition border-b border-slate-200 divide-x divide-slate-100";
@@ -280,7 +345,7 @@
                     <td class="px-3 py-2">${r.proceso || ''}</td>
                     <td class="px-3 py-2 font-semibold text-slate-800">${r.funcionario || ''}</td>
                     <td class="px-3 py-2 font-bold text-emerald-700">${r.municipio || ''}</td>
-                    <td class="px-3 py-2">${r.unidad || ''}</td>
+                    <td class="px-3 py-2 font-semibold">${r.unidad || ''}</td>
                     <td class="px-3 py-2">${r.series || ''}</td>
                     <td class="px-3 py-2 text-center font-bold text-slate-800">${r.cantidad ? Number(r.cantidad).toLocaleString() : '0'}</td>
                     <td class="px-3 py-2 font-bold text-emerald-800 bg-emerald-50">${r.responsable || ''}</td>
@@ -313,7 +378,7 @@
                 cantidad: document.getElementById('input-cantidad').value,
                 responsable: document.getElementById('input-responsable').value,
                 estado: document.getElementById('input-estado').value,
-                detalleEstado: document.getElementById('input-detalle-estado').value,
+                detalleEstado: obtenerDetalleEstadoFinal(),
                 dias: document.getElementById('input-dias').value,
                 alerta: document.getElementById('input-alerta').value
             };
@@ -331,10 +396,9 @@
                 contadorSecuencia++;
                 generarRadicadoInmediato();
                 document.getElementById('input-cantidad').value = '';
-                document.getElementById('input-detalle-estado').value = '';
+                document.getElementById('input-detalle-personalizado').value = '';
                 calcularDiasGestionAutomatico();
                 
-                // Espera 2 segundos para dar tiempo a Sheets de guardar y vuelve a consultar
                 setTimeout(cargarDatosDesdeDrive, 2000);
             })
             .catch(err => {
@@ -355,11 +419,9 @@
             if (data) {
                 document.getElementById('input-funcionario').value = data.director;
                 document.getElementById('input-cliente').value = data.dispensario;
-                document.getElementById('input-unidad').value = data.unidad;
             } else {
                 document.getElementById('input-funcionario').value = '';
                 document.getElementById('input-cliente').value = '';
-                document.getElementById('input-unidad').value = '';
             }
         }
     </script>
