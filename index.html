@@ -4,15 +4,17 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control de Transferencias Documentales</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans p-4 min-h-screen">
 
     <div class="max-w-7xl mx-auto space-y-6">
 
-        <!-- Encabezado -->
-        <div class="bg-slate-900 text-white p-4 rounded-xl shadow-md flex justify-between items-center">
+        <!-- Encabezado con Botones de Sincronización y Restablecer -->
+        <div class="bg-slate-900 text-white p-4 rounded-xl shadow-md flex justify-between items-center flex-wrap gap-3">
             <div class="flex items-center space-x-3">
                 <div class="bg-emerald-600 p-2 rounded-lg">
                     <i data-lucide="shield-alert" class="w-6 h-6 text-white"></i>
@@ -22,16 +24,23 @@
                     <p class="text-xs text-slate-400">Pestaña: <span class="text-emerald-400 font-bold">Pruebas</span> | Conexión API Google Sheets</p>
                 </div>
             </div>
-            <button onclick="cargarDatosDesdeDrive()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-sm">
-                <i data-lucide="refresh-cw" class="w-3.5 h-3.5 mr-1.5"></i> Sincronizar
-            </button>
+            
+            <!-- Acciones de Datos -->
+            <div class="flex items-center space-x-2">
+                <button type="button" onclick="cargarDatosDesdeDrive()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-sm">
+                    <i data-lucide="refresh-cw" class="w-3.5 h-3.5 mr-1.5"></i> Sincronizar
+                </button>
+                <button type="button" onclick="restablecerRegistrosLocales()" class="bg-rose-600 hover:bg-rose-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-sm">
+                    <i data-lucide="trash-2" class="w-3.5 h-3.5 mr-1.5"></i> Restablecer Local
+                </button>
+            </div>
         </div>
 
         <!-- Formulario de Registro -->
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
             <form id="transfer-form" onsubmit="registrarEnDrive(event)" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
                 
-                <!-- CONTRATO (AL INICIO) -->
+                <!-- 1. CONTRATO (AL INICIO) -->
                 <div class="bg-purple-50 p-2.5 rounded-lg border border-purple-300">
                     <label class="block font-bold text-purple-900 mb-1">📋 CONTRATO</label>
                     <select id="input-contrato" required class="w-full border border-purple-400 rounded p-2 bg-white font-bold text-purple-900 focus:outline-none">
@@ -41,11 +50,13 @@
                     </select>
                 </div>
 
+                <!-- CONSECUTIVO / RADICADO -->
                 <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
                     <label class="block font-bold text-slate-700 mb-1">⚡ CONSECUTIVO / RADICADO</label>
                     <input type="text" id="input-radicado" readonly class="w-full border border-slate-300 rounded p-2 bg-white font-mono font-bold text-indigo-700 focus:outline-none">
                 </div>
 
+                <!-- ESTACIÓN / DIRECCIÓN IP -->
                 <div class="bg-indigo-50 p-2.5 rounded-lg border border-indigo-200">
                     <label class="block font-bold text-indigo-900 mb-1">🌐 ESTACIÓN / DIRECCIÓN IP</label>
                     <select id="select-ip-equipo" onchange="actualizarResponsablePorIP()" class="w-full border border-indigo-300 rounded p-2 bg-white font-mono font-bold text-indigo-800 focus:outline-none">
@@ -55,11 +66,13 @@
                     </select>
                 </div>
 
+                <!-- RESPONSABLE ARCHIVO CENTRAL -->
                 <div class="bg-emerald-50 p-2.5 rounded-lg border border-emerald-200">
                     <label class="block font-bold text-emerald-900 mb-1">👤 RESPONSABLE ARCHIVO CENTRAL</label>
                     <input type="text" id="input-responsable" readonly class="w-full border border-emerald-300 rounded p-2 bg-white font-bold text-emerald-800 focus:outline-none">
                 </div>
 
+                <!-- MUNICIPIO DE ORIGEN -->
                 <div class="bg-yellow-50 p-2.5 rounded-lg border border-yellow-300">
                     <label class="block font-bold text-slate-800 mb-1">📍 MUNICIPIO DE ORIGEN</label>
                     <select id="input-municipio" onchange="autocompletarPorMunicipio()" required class="w-full border border-yellow-400 rounded p-2 bg-white font-semibold text-slate-900 focus:outline-none">
@@ -129,7 +142,7 @@
                     </select>
                 </div>
 
-                <!-- FECHA DE CIERRE (HABILITADA OPCIONALMENTE) -->
+                <!-- 2. FECHA DE CIERRE (COLUMNA P) -->
                 <div class="bg-emerald-50 p-2.5 rounded-lg border border-emerald-300">
                     <label class="block font-bold text-emerald-900 mb-1">🏁 FECHA DE CIERRE (Columna P)</label>
                     <input type="date" id="input-fecha-cierre" onchange="evaluarFormulaAlerta()" class="w-full border border-emerald-400 rounded p-2 bg-white font-semibold">
@@ -158,7 +171,7 @@
             </form>
         </div>
 
-        <!-- Tabla Matriz -->
+        <!-- Tabla Matriz en Tiempo Real -->
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <div class="p-3 bg-slate-800 text-white text-xs font-bold flex justify-between items-center">
                 <span>MATRIZ EN TIEMPO REAL - HOJA: PRUEBAS</span>
@@ -199,10 +212,11 @@
 
     </div>
 
+    <!-- Script Principal con manejo de Almacenamiento Local y Apps Script -->
     <script>
         const API_URL = "https://script.google.com/macros/s/AKfycbwke38o0tb5Uw3TdHjaY8VdVzmoL-n4RUmmkYd93n80aDWuO8jrCZ308g2OxEcO7zROTg/exec";
 
-        let contadorSecuencia = 1;
+        let registrosLocales = JSON.parse(localStorage.getItem('registros_control_documental')) || [];
 
         const mapaIPResponsables = {
             "192.168.1.10": "Ayda Matabajoy A.",
@@ -224,15 +238,20 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
+            
             const selectMun = document.getElementById('input-municipio');
             Object.keys(farmaciasData).sort().forEach(m => {
                 selectMun.innerHTML += `<option value="${m}">${m}</option>`;
             });
 
             document.getElementById('input-fecha').valueAsDate = new Date();
-            generarRadicadoInmediato();
             actualizarResponsablePorIP();
             calcularDiasGestionAutomatico();
+            
+            // Carga los datos almacenados en el navegador al iniciar
+            renderTabla(registrosLocales);
+            
+            // Intenta actualizar desde Google Drive
             cargarDatosDesdeDrive();
         });
 
@@ -270,32 +289,37 @@
         }
 
         function generarRadicadoInmediato() {
+            const contadorSecuencia = registrosLocales.length + 1;
             const numFormateado = String(contadorSecuencia).padStart(3, '0');
             document.getElementById('input-radicado').value = `RAD-2026-${numFormateado}`;
         }
 
         function cargarDatosDesdeDrive() {
-            document.getElementById('contador-registros').innerText = "Cargando...";
             fetch(API_URL)
                 .then(res => res.json())
-                .then(data => renderTablaDesdeDrive(data))
+                .then(data => {
+                    if (data && Array.isArray(data) && data.length > 0) {
+                        registrosLocales = data;
+                        localStorage.setItem('registros_control_documental', JSON.stringify(registrosLocales));
+                        renderTabla(registrosLocales);
+                    }
+                })
                 .catch(err => {
-                    console.error("Error al obtener datos:", err);
-                    document.getElementById('contador-registros').innerText = "Error de conexión";
+                    console.log("No se pudo sincronizar con Drive, mostrando copia local.");
                 });
         }
 
-        function renderTablaDesdeDrive(registros) {
+        function renderTabla(registros) {
             const tbody = document.getElementById('tabla-body');
             tbody.innerHTML = '';
 
-            if (!registros || !Array.isArray(registros) || registros.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="16" class="p-4 text-center text-slate-400 font-bold">Sin registros guardados en Drive.</td></tr>`;
+            if (!registros || registros.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="16" class="p-4 text-center text-slate-400 font-bold">Sin registros guardados en memoria local ni en Drive.</td></tr>`;
                 document.getElementById('contador-registros').innerText = "0 registros";
+                generarRadicadoInmediato();
                 return;
             }
 
-            contadorSecuencia = registros.length + 1;
             generarRadicadoInmediato();
 
             [...registros].reverse().forEach(r => {
@@ -327,7 +351,7 @@
                 tbody.appendChild(tr);
             });
 
-            document.getElementById('contador-registros').innerText = `${registros.length} registro(s) en Drive`;
+            document.getElementById('contador-registros').innerText = `${registros.length} registro(s) guardado(s)`;
         }
 
         function registrarEnDrive(e) {
@@ -355,6 +379,12 @@
                 fechaCierre: document.getElementById('input-fecha-cierre').value
             };
 
+            // 1. Guardar de inmediato en almacenamiento local
+            registrosLocales.push(nuevoRegistro);
+            localStorage.setItem('registros_control_documental', JSON.stringify(registrosLocales));
+            renderTabla(registrosLocales);
+
+            // 2. Transmitir a Google Drive via API
             fetch(API_URL, {
                 method: 'POST',
                 mode: 'no-cors',
@@ -365,19 +395,31 @@
                 btn.disabled = false;
                 btn.innerHTML = `<i data-lucide="plus-circle" class="w-4 h-4 mr-2"></i> Guardar en Drive`;
                 lucide.createIcons();
-                
-                document.getElementById('input-contrato').value = '';
-                document.getElementById('input-series').value = '';
-                document.getElementById('input-cantidad').value = '';
-                document.getElementById('input-detalle-estado').value = '';
-                document.getElementById('input-fecha-cierre').value = '';
-                
-                setTimeout(cargarDatosDesdeDrive, 1500);
+                limpiarFormulario();
             })
             .catch(err => {
-                alert("Error al enviar los datos.");
                 btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="plus-circle" class="w-4 h-4 mr-2"></i> Guardar en Drive`;
+                lucide.createIcons();
+                limpiarFormulario();
             });
+        }
+
+        function limpiarFormulario() {
+            document.getElementById('input-contrato').value = '';
+            document.getElementById('input-series').value = '';
+            document.getElementById('input-cantidad').value = '';
+            document.getElementById('input-detalle-estado').value = '';
+            document.getElementById('input-fecha-cierre').value = '';
+        }
+
+        function restablecerRegistrosLocales() {
+            if (confirm("¿Desea eliminar la copia local de registros guardados en el navegador?")) {
+                localStorage.removeItem('registros_control_documental');
+                registrosLocales = [];
+                renderTabla(registrosLocales);
+                alert("La memoria local ha sido limpiada.");
+            }
         }
 
         function actualizarResponsablePorIP() {
