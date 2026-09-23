@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control de Transferencias Documentales</title>
+    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Lucide Icons CDN -->
     <script src="https://unpkg.com/lucide@latest"></script>
 </head>
 <body class="bg-slate-100 text-slate-800 font-sans p-4 min-h-screen">
@@ -57,6 +59,8 @@
                 <div class="bg-indigo-50 p-2.5 rounded-lg border border-indigo-200">
                     <label class="block font-bold text-indigo-900 mb-1">🌐 ESTACIÓN / DIRECCIÓN IP</label>
                     <select id="select-ip-equipo" onchange="actualizarResponsablePorIP()" class="w-full border border-indigo-300 rounded p-2 bg-white font-mono font-bold text-indigo-800 focus:outline-none">
+                        <option value="192.168.20.76">IP: 192.168.20.76 (Stiven Quintana L. / Maily Sandoval)</option>
+                        <option value="192.168.20.63">IP: 192.168.20.63 (Ayda Matabajoy A.)</option>
                         <option value="192.168.1.10">IP: 192.168.1.10 (Equipo 1)</option>
                         <option value="192.168.1.11">IP: 192.168.1.11 (Equipo 2)</option>
                         <option value="192.168.1.12">IP: 192.168.1.12 (Equipo 3)</option>
@@ -222,7 +226,10 @@
 
         let registrosLocales = JSON.parse(localStorage.getItem('registros_control_documental')) || [];
 
+        // ASIGNACIÓN ACTUALIZADA POR DIRECCIÓN IP
         const mapaIPResponsables = {
+            "192.168.20.76": "Stiven Quintana L. / Maily Sandoval Reyes",
+            "192.168.20.63": "Ayda Matabajoy A.",
             "192.168.1.10": "Ayda Matabajoy A.",
             "192.168.1.11": "Stiven Quintana L.",
             "192.168.1.12": "Cristian Camilo Peña"
@@ -380,12 +387,10 @@
                 fechaCierre: document.getElementById('input-fecha-cierre').value
             };
 
-            // 1. Guardar copia local de inmediato
             registrosLocales.push(nuevoRegistro);
             localStorage.setItem('registros_control_documental', JSON.stringify(registrosLocales));
             renderTabla(registrosLocales);
 
-            // 2. Enviar a Google Apps Script
             fetch(API_URL, {
                 method: 'POST',
                 mode: 'no-cors',
