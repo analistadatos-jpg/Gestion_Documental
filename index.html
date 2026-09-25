@@ -21,7 +21,12 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-base md:text-lg">CONTROL DE TRANSFERENCIAS DOCUMENTALES AL ARCHIVO CENTRAL</h1>
-                    <p class="text-xs text-slate-400">Pestaña: <span class="text-emerald-400 font-bold">Pruebas</span> | Conexión API Google Sheets</p>
+                    <p class="text-xs text-slate-400">
+                        Hoja de Google Sheets: 
+                        <a href="https://docs.google.com/spreadsheets/d/1nWatDC9XuvhbozELdAIMVaH0BD8NmbpKFc8S09g7jis/edit?gid=0#gid=0" target="_blank" class="text-emerald-400 font-bold underline hover:text-emerald-300">
+                            Abrir Documento
+                        </a> | Conexión API Google Sheets
+                    </p>
                 </div>
             </div>
             
@@ -181,7 +186,7 @@
         <!-- Tabla Matriz -->
         <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
             <div class="p-3 bg-slate-800 text-white text-xs font-bold flex justify-between items-center">
-                <span>MATRIZ EN TIEMPO REAL - HOJA: PRUEBAS</span>
+                <span>MATRIZ EN TIEMPO REAL - SPREADSHEET (ID: 1nWatDC9XuvhbozELdAIMVaH0BD8NmbpKFc8S09g7jis)</span>
                 <span id="contador-registros" class="text-slate-300 font-normal">Cargando...</span>
             </div>
             <div class="overflow-x-auto">
@@ -220,12 +225,12 @@
     </div>
 
     <script>
-        // API URL mrabūṭa b-l-ID d-l-deployment d-Google Apps Script[cite: 2]
+        // Reemplazar la constante API_URL con la URL desplegada de tu Google Apps Script vinculado al nuevo documento.
         const API_URL = "https://script.google.com/macros/s/AKfycbwke38o0tb5Uw3TdHjaY8VdVzmoL-n4RUmmkYd93n80aDWuO8jrCZ308g2OxEcO7zROTg/exec";
 
-        let registrosLocales = JSON.parse(localStorage.getItem('registros_control_documental')) || [];[cite: 2]
+        let registrosLocales = JSON.parse(localStorage.getItem('registros_control_documental')) || [];
 
-        // MAPA EXCLUSIVO DE IP Y RESPONSABLE[cite: 2]
+        // MAPA EXCLUSIVO DE IP Y RESPONSABLE
         const mapaIPResponsables = {
             "192.168.20.76": "Maily Sandoval Reyes",
             "192.168.20.96": "Thristan Stiven Quintana",
@@ -245,89 +250,89 @@
         };
 
         document.addEventListener('DOMContentLoaded', () => {
-            lucide.createIcons();[cite: 2]
+            lucide.createIcons();
             
-            const selectMun = document.getElementById('input-municipio');[cite: 2]
+            const selectMun = document.getElementById('input-municipio');
             Object.keys(farmaciasData).sort().forEach(m => {
-                selectMun.innerHTML += `<option value="${m}">${m}</option>`;[cite: 2]
+                selectMun.innerHTML += `<option value="${m}">${m}</option>`;
             });
 
-            document.getElementById('input-fecha').valueAsDate = new Date();[cite: 2]
+            document.getElementById('input-fecha').valueAsDate = new Date();
             
-            // Intenta detectar la IP local automáticamente al cargar la página[cite: 2]
-            detectarIPLocalYActualizar();[cite: 2]
+            // Intenta detectar la IP local automáticamente al cargar la página
+            detectarIPLocalYActualizar();
             
-            calcularDiasGestionAutomatico();[cite: 2]
-            renderTabla(registrosLocales);[cite: 2]
-            cargarDatosDesdeDrive();[cite: 2]
+            calcularDiasGestionAutomatico();
+            renderTabla(registrosLocales);
+            cargarDatosDesdeDrive();
         });
 
-        // DETECCIÓN AUTOMÁTICA DE LA IP DEL EQUIPO[cite: 2]
+        // DETECCIÓN AUTOMÁTICA DE LA IP DEL EQUIPO
         function detectarIPLocalYActualizar() {
-            actualizarResponsablePorIP(); // Valor por defecto inicial[cite: 2]
+            actualizarResponsablePorIP(); // Valor por defecto inicial
 
-            // Intenta leer la IP local del equipo usando RTCPeerConnection[cite: 2]
-            const pc = new RTCPeerConnection({ iceServers: [] });[cite: 2]
-            pc.createDataChannel('');[cite: 2]
-            pc.createOffer().then(offer => pc.setLocalDescription(offer)).catch(() => {});[cite: 2]
+            // Intenta leer la IP local del equipo usando RTCPeerConnection
+            const pc = new RTCPeerConnection({ iceServers: [] });
+            pc.createDataChannel('');
+            pc.createOffer().then(offer => pc.setLocalDescription(offer)).catch(() => {});
             
             pc.onicecandidate = (ice) => {
-                if (!ice || !ice.candidate || !ice.candidate.candidate) return;[cite: 2]
-                const ipMatch = /([0-9]{1,3}(\.[0-9]{1,3}){3})/.exec(ice.candidate.candidate);[cite: 2]
+                if (!ice || !ice.candidate || !ice.candidate.candidate) return;
+                const ipMatch = /([0-9]{1,3}(\.[0-9]{1,3}){3})/.exec(ice.candidate.candidate);
                 if (ipMatch && ipMatch[1]) {
-                    const detectedIP = ipMatch[1];[cite: 2]
-                    const selectIP = document.getElementById('select-ip-equipo');[cite: 2]
+                    const detectedIP = ipMatch[1];
+                    const selectIP = document.getElementById('select-ip-equipo');
                     if (mapaIPResponsables[detectedIP]) {
-                        selectIP.value = detectedIP;[cite: 2]
-                        actualizarResponsablePorIP();[cite: 2]
+                        selectIP.value = detectedIP;
+                        actualizarResponsablePorIP();
                     }
                 }
-                pc.onicecandidate = () => {};[cite: 2]
+                pc.onicecandidate = () => {};
             };
         }
 
         function actualizarResponsablePorIP() {
-            const ipSeleccionada = document.getElementById('select-ip-equipo').value;[cite: 2]
-            document.getElementById('input-responsable').value = mapaIPResponsables[ipSeleccionada] || "Responsable no asignado";[cite: 2]
+            const ipSeleccionada = document.getElementById('select-ip-equipo').value;
+            document.getElementById('input-responsable').value = mapaIPResponsables[ipSeleccionada] || "Responsable no asignado";
         }
 
         function calcularDiasGestionAutomatico() {
-            const fechaRecibidoStr = document.getElementById('input-fecha').value;[cite: 2]
+            const fechaRecibidoStr = document.getElementById('input-fecha').value;
             if (fechaRecibidoStr) {
-                const [yyyy, mm, dd] = fechaRecibidoStr.split('-').map(Number);[cite: 2]
-                const fechaRecibido = new Date(yyyy, mm - 1, dd);[cite: 2]
-                const hoy = new Date();[cite: 2]
-                hoy.setHours(0, 0, 0, 0);[cite: 2]
+                const [yyyy, mm, dd] = fechaRecibidoStr.split('-').map(Number);
+                const fechaRecibido = new Date(yyyy, mm - 1, dd);
+                const hoy = new Date();
+                hoy.setHours(0, 0, 0, 0);
 
-                const diffDays = Math.max(0, Math.floor((hoy - fechaRecibido) / (1000 * 60 * 60 * 24)));[cite: 2]
-                document.getElementById('input-dias').value = diffDays;[cite: 2]
+                const diffDays = Math.max(0, Math.floor((hoy - fechaRecibido) / (1000 * 60 * 60 * 24)));
+                document.getElementById('input-dias').value = diffDays;
             } else {
-                document.getElementById('input-dias').value = 0;[cite: 2]
+                document.getElementById('input-dias').value = 0;
             }
-            evaluarFormulaAlerta();[cite: 2]
+            evaluarFormulaAlerta();
         }
 
         function evaluarFormulaAlerta() {
-            const estadoGest = document.getElementById('input-estado').value;[cite: 2]
-            const fechaCierre = document.getElementById('input-fecha-cierre').value;[cite: 2]
-            const dias = Number(document.getElementById('input-dias').value || 0);[cite: 2]
-            const alertaInput = document.getElementById('input-alerta');[cite: 2]
+            const estadoGest = document.getElementById('input-estado').value;
+            const fechaCierre = document.getElementById('input-fecha-cierre').value;
+            const dias = Number(document.getElementById('input-dias').value || 0);
+            const alertaInput = document.getElementById('input-alerta');
 
             if (fechaCierre || estadoGest === "Archivado Definitivo") {
-                alertaInput.value = "✅ Cerrado";[cite: 2]
+                alertaInput.value = "✅ Cerrado";
             } else if (dias >= 6) {
-                alertaInput.value = "🔴 Vencido";[cite: 2]
+                alertaInput.value = "🔴 Vencido";
             } else if (dias >= 5) {
-                alertaInput.value = "🟡 Próximo a vencer";[cite: 2]
+                alertaInput.value = "🟡 Próximo a vencer";
             } else {
-                alertaInput.value = "🟢 A Tiempo";[cite: 2]
+                alertaInput.value = "🟢 A Tiempo";
             }
         }
 
         function generarRadicadoInmediato() {
-            const contadorSecuencia = registrosLocales.length + 1;[cite: 2]
-            const numFormateado = String(contadorSecuencia).padStart(3, '0');[cite: 2]
-            document.getElementById('input-radicado').value = `RAD-2026-${numFormateado}`;[cite: 2]
+            const contadorSecuencia = registrosLocales.length + 1;
+            const numFormateado = String(contadorSecuencia).padStart(3, '0');
+            document.getElementById('input-radicado').value = `RAD-2026-${numFormateado}`;
         }
 
         function cargarDatosDesdeDrive() {
@@ -335,36 +340,36 @@
                 .then(res => res.json())
                 .then(data => {
                     if (data && Array.isArray(data) && data.length > 0) {
-                        registrosLocales = data;[cite: 2]
-                        localStorage.setItem('registros_control_documental', JSON.stringify(registrosLocales));[cite: 2]
-                        renderTabla(registrosLocales);[cite: 2]
+                        registrosLocales = data;
+                        localStorage.setItem('registros_control_documental', JSON.stringify(registrosLocales));
+                        renderTabla(registrosLocales);
                     }
                 })
                 .catch(err => {
-                    console.log("Servidor no disponible momentáneamente, cargando copia local.");[cite: 2]
+                    console.log("Servidor no disponible momentáneamente, cargando copia local.");
                 });
         }
 
         function renderTabla(registros) {
-            const tbody = document.getElementById('tabla-body');[cite: 2]
-            tbody.innerHTML = '';[cite: 2]
+            const tbody = document.getElementById('tabla-body');
+            tbody.innerHTML = '';
 
             if (!registros || registros.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="16" class="p-4 text-center text-slate-400 font-bold">Sin registros guardados.</td></tr>`;[cite: 2]
-                document.getElementById('contador-registros').innerText = "0 registros";[cite: 2]
-                generarRadicadoInmediato();[cite: 2]
+                tbody.innerHTML = `<tr><td colspan="16" class="p-4 text-center text-slate-400 font-bold">Sin registros guardados.</td></tr>`;
+                document.getElementById('contador-registros').innerText = "0 registros";
+                generarRadicadoInmediato();
                 return;
             }
 
-            generarRadicadoInmediato();[cite: 2]
+            generarRadicadoInmediato();
 
             [...registros].reverse().forEach(r => {
-                const tr = document.createElement('tr');[cite: 2]
-                const esCerrado = (r.alerta && r.alerta.includes("Cerrado")) || (r.fechaCierre && r.fechaCierre.trim() !== "");[cite: 2]
+                const tr = document.createElement('tr');
+                const esCerrado = (r.alerta && r.alerta.includes("Cerrado")) || (r.fechaCierre && r.fechaCierre.trim() !== "");
                 
                 tr.className = esCerrado 
                     ? "bg-emerald-50 hover:bg-emerald-100 transition border-b border-emerald-200 divide-x divide-emerald-100 text-emerald-950 font-medium" 
-                    : "hover:bg-slate-50 transition border-b border-slate-200 divide-x divide-slate-100";[cite: 2]
+                    : "hover:bg-slate-50 transition border-b border-slate-200 divide-x divide-slate-100";
 
                 tr.innerHTML = `
                     <td class="px-3 py-2 font-bold text-purple-900 bg-purple-50/50">${r.contrato || ''}</td>
@@ -383,18 +388,18 @@
                     <td class="px-3 py-2 text-center font-bold text-blue-900">${r.dias || '0'}</td>
                     <td class="px-3 py-2 text-center font-bold">${r.alerta || ''}</td>
                     <td class="px-3 py-2 text-center font-semibold text-emerald-900">${r.fechaCierre || ''}</td>
-                `;[cite: 2]
-                tbody.appendChild(tr);[cite: 2]
+                `;
+                tbody.appendChild(tr);
             });
 
-            document.getElementById('contador-registros').innerText = `${registros.length} registro(s) guardado(s)`;[cite: 2]
+            document.getElementById('contador-registros').innerText = `${registros.length} registro(s) guardado(s)`;
         }
 
         function registrarEnDrive(e) {
-            e.preventDefault();[cite: 2]
-            const btn = document.getElementById('btn-guardar');[cite: 2]
-            btn.disabled = true;[cite: 2]
-            btn.innerText = "Guardando...";[cite: 2]
+            e.preventDefault();
+            const btn = document.getElementById('btn-guardar');
+            btn.disabled = true;
+            btn.innerText = "Guardando...";
 
             const nuevoRegistro = {
                 contrato: document.getElementById('input-contrato').value,
@@ -413,11 +418,11 @@
                 dias: document.getElementById('input-dias').value,
                 alerta: document.getElementById('input-alerta').value,
                 fechaCierre: document.getElementById('input-fecha-cierre').value
-            };[cite: 2]
+            };
 
-            registrosLocales.push(nuevoRegistro);[cite: 2]
-            localStorage.setItem('registros_control_documental', JSON.stringify(registrosLocales));[cite: 2]
-            renderTabla(registrosLocales);[cite: 2]
+            registrosLocales.push(nuevoRegistro);
+            localStorage.setItem('registros_control_documental', JSON.stringify(registrosLocales));
+            renderTabla(registrosLocales);
 
             fetch(API_URL, {
                 method: 'POST',
@@ -426,47 +431,47 @@
                 body: JSON.stringify(nuevoRegistro)
             })
             .then(() => {
-                btn.disabled = false;[cite: 2]
-                btn.innerHTML = `<i data-lucide="plus-circle" class="w-4 h-4 mr-2"></i> Guardar en Drive`;[cite: 2]
-                lucide.createIcons();[cite: 2]
-                limpiarFormulario();[cite: 2]
-                setTimeout(cargarDatosDesdeDrive, 1500);[cite: 2]
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="plus-circle" class="w-4 h-4 mr-2"></i> Guardar en Drive`;
+                lucide.createIcons();
+                limpiarFormulario();
+                setTimeout(cargarDatosDesdeDrive, 1500);
             })
             .catch(err => {
-                btn.disabled = false;[cite: 2]
-                btn.innerHTML = `<i data-lucide="plus-circle" class="w-4 h-4 mr-2"></i> Guardar en Drive`;[cite: 2]
-                lucide.createIcons();[cite: 2]
-                limpiarFormulario();[cite: 2]
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="plus-circle" class="w-4 h-4 mr-2"></i> Guardar en Drive`;
+                lucide.createIcons();
+                limpiarFormulario();
             });
         }
 
         function limpiarFormulario() {
-            document.getElementById('input-contrato').value = '';[cite: 2]
-            document.getElementById('input-series').value = 'Actas de Recepción Técnica';[cite: 2]
-            document.getElementById('input-cantidad').value = '';[cite: 2]
-            document.getElementById('input-detalle-estado').value = '';[cite: 2]
-            document.getElementById('input-fecha-cierre').value = '';[cite: 2]
+            document.getElementById('input-contrato').value = '';
+            document.getElementById('input-series').value = 'Actas de Recepción Técnica';
+            document.getElementById('input-cantidad').value = '';
+            document.getElementById('input-detalle-estado').value = '';
+            document.getElementById('input-fecha-cierre').value = '';
         }
 
         function restablecerRegistrosLocales() {
-            if (confirm("¿Desea restablecer los datos guardados localmente en su navegador?")) {[cite: 2]
-                localStorage.removeItem('registros_control_documental');[cite: 2]
-                registrosLocales = [];[cite: 2]
-                renderTabla(registrosLocales);[cite: 2]
-                alert("Almacenamiento local limpiado.");[cite: 2]
+            if (confirm("¿Desea restablecer los datos guardados localmente en su navegador?")) {
+                localStorage.removeItem('registros_control_documental');
+                registrosLocales = [];
+                renderTabla(registrosLocales);
+                alert("Almacenamiento local limpiado.");
             }
         }
 
         function autocompletarPorMunicipio() {
-            const munKey = document.getElementById('input-municipio').value;[cite: 2]
-            const data = farmaciasData[munKey];[cite: 2]
+            const munKey = document.getElementById('input-municipio').value;
+            const data = farmaciasData[munKey];
 
             if (data) {
-                document.getElementById('input-funcionario').value = data.director;[cite: 2]
-                document.getElementById('input-cliente').value = data.dispensario;[cite: 2]
+                document.getElementById('input-funcionario').value = data.director;
+                document.getElementById('input-cliente').value = data.dispensario;
             } else {
-                document.getElementById('input-funcionario').value = '';[cite: 2]
-                document.getElementById('input-cliente').value = '';[cite: 2]
+                document.getElementById('input-funcionario').value = '';
+                document.getElementById('input-cliente').value = '';
             }
         }
     </script>
