@@ -13,7 +13,7 @@
 
     <div class="max-w-7xl mx-auto space-y-6">
 
-        <!-- Encabezado con Botones de Sincronización y Restablecer -->
+        <!-- Encabezado con Botones y Control de Pestañas -->
         <div class="bg-slate-900 text-white p-4 rounded-xl shadow-md flex justify-between items-center flex-wrap gap-3">
             <div class="flex items-center space-x-3">
                 <div class="bg-emerald-600 p-2 rounded-lg">
@@ -21,16 +21,18 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-base md:text-lg">CONTROL DE TRANSFERENCIAS DOCUMENTALES AL ARCHIVO CENTRAL</h1>
-                    <p class="text-xs text-slate-400">
-                        Hoja de Google Sheets: 
-                        <a href="https://docs.google.com/spreadsheets/d/1nWatDC9XuvhbozELdAIMVaH0BD8NmbpKFc8S09g7jis/edit?gid=0#gid=0" target="_blank" class="text-emerald-400 font-bold underline hover:text-emerald-300">
-                            Abrir Documento
-                        </a> | Conexión API Google Sheets
-                    </p>
+                    <p class="text-xs text-slate-400">Pestaña: <span class="text-emerald-400 font-bold">Pruebas</span> | Conexión API Google Sheets</p>
                 </div>
             </div>
             
             <div class="flex items-center space-x-2">
+                <button type="button" onclick="cambiarVista('matriz')" id="btn-vista-matriz" class="bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-sm">
+                    <i data-lucide="table" class="w-3.5 h-3.5 mr-1.5"></i> Formulario y Matriz
+                </button>
+                <button type="button" onclick="cambiarVista('dashboard')" id="btn-vista-dashboard" class="bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-sm">
+                    <i data-lucide="layout-dashboard" class="w-3.5 h-3.5 mr-1.5"></i> Dashboard Drive
+                </button>
+                <span class="text-slate-700">|</span>
                 <button type="button" onclick="cargarDatosDesdeDrive()" class="bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-sm">
                     <i data-lucide="refresh-cw" class="w-3.5 h-3.5 mr-1.5"></i> Sincronizar
                 </button>
@@ -40,197 +42,308 @@
             </div>
         </div>
 
-        <!-- Formulario de Registro -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
-            <form id="transfer-form" onsubmit="registrarEnDrive(event)" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
-                
-                <!-- CONTRATO -->
-                <div class="bg-purple-50 p-2.5 rounded-lg border border-purple-300">
-                    <label class="block font-bold text-purple-900 mb-1">📋 CONTRATO</label>
-                    <select id="input-contrato" required class="w-full border border-purple-400 rounded p-2 bg-white font-bold text-purple-900 focus:outline-none">
-                        <option value="">-- Seleccionar Contrato --</option>
-                        <option value="NUEVA EPS">NUEVA EPS</option>
-                        <option value="FOMAG">FOMAG</option>
-                    </select>
+        <!-- CONTENEDOR VISTA 1: FORMULARIO Y MATRIZ -->
+        <div id="vista-matriz" class="space-y-6">
+
+            <!-- TARJETAS DE INDICADORES (KPI) -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Transferencias Recibidas</p>
+                        <h3 id="kpi-total" class="text-2xl font-black text-slate-800">0</h3>
+                    </div>
+                    <div class="p-3 bg-slate-100 text-slate-600 rounded-lg">
+                        <i data-lucide="files" class="w-6 h-6"></i>
+                    </div>
                 </div>
 
-                <!-- CONSECUTIVO / RADICADO -->
-                <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
-                    <label class="block font-bold text-slate-700 mb-1">⚡ CONSECUTIVO / RADICADO</label>
-                    <input type="text" id="input-radicado" readonly placeholder="Auto por Servidor" class="w-full border border-slate-300 rounded p-2 bg-white font-mono font-bold text-indigo-700 focus:outline-none">
+                <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-emerald-600 uppercase tracking-wider">Con FUID Correcto (Archivados)</p>
+                        <h3 id="kpi-fuid-ok" class="text-2xl font-black text-emerald-600">0</h3>
+                    </div>
+                    <div class="p-3 bg-emerald-50 text-emerald-600 rounded-lg">
+                        <i data-lucide="file-check-2" class="w-6 h-6"></i>
+                    </div>
                 </div>
 
-                <!-- ESTACIÓN / DIRECCIÓN IP -->
-                <div class="bg-indigo-50 p-2.5 rounded-lg border border-indigo-200">
-                    <label class="block font-bold text-indigo-900 mb-1">🌐 ESTACIÓN / DIRECCIÓN IP</label>
-                    <select id="select-ip-equipo" onchange="actualizarResponsablePorIP()" class="w-full border border-indigo-300 rounded p-2 bg-white font-mono font-bold text-indigo-800 focus:outline-none">
-                        <option value="192.168.20.76">IP: 192.168.20.76 (Maily Sandoval Reyes)</option>
-                        <option value="192.168.20.96">IP: 192.168.20.96 (Thristan Stiven Quintana)</option>
-                        <option value="192.168.20.63">IP: 192.168.20.63 (Ayda Matabajoy Alvarez)</option>
-                    </select>
+                <div class="bg-emerald-700 text-white p-4 rounded-xl shadow-sm flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-bold text-emerald-100 uppercase tracking-wider">% FUID Correctamente Diligenciado</p>
+                        <h3 id="kpi-porcentaje-fuid" class="text-3xl font-black">0.0%</h3>
+                    </div>
+                    <div class="p-3 bg-white/20 rounded-lg text-white">
+                        <i data-lucide="pie-chart" class="w-7 h-7"></i>
+                    </div>
                 </div>
+            </div>
 
-                <!-- RESPONSABLE ARCHIVO CENTRAL -->
-                <div class="bg-emerald-50 p-2.5 rounded-lg border border-emerald-200">
-                    <label class="block font-bold text-emerald-900 mb-1">👤 RESPONSABLE ARCHIVO CENTRAL</label>
-                    <input type="text" id="input-responsable" readonly class="w-full border border-emerald-300 rounded p-2 bg-white font-bold text-emerald-800 focus:outline-none">
-                </div>
+            <!-- FORMULARIO DE REGISTRO -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm p-6 space-y-4">
+                <form id="transfer-form" onsubmit="registrarEnDrive(event)" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
+                    
+                    <!-- CONTRATO -->
+                    <div class="bg-purple-50 p-2.5 rounded-lg border border-purple-300">
+                        <label class="block font-bold text-purple-900 mb-1">📋 CONTRATO</label>
+                        <select id="input-contrato" required class="w-full border border-purple-400 rounded p-2 bg-white font-bold text-purple-900 focus:outline-none">
+                            <option value="">-- Seleccionar Contrato --</option>
+                            <option value="NUEVA EPS">NUEVA EPS</option>
+                            <option value="FOMAG">FOMAG</option>
+                        </select>
+                    </div>
 
-                <!-- MUNICIPIO DE ORIGEN -->
-                <div class="bg-yellow-50 p-2.5 rounded-lg border border-yellow-300">
-                    <label class="block font-bold text-slate-800 mb-1">📍 MUNICIPIO DE ORIGEN</label>
-                    <select id="input-municipio" onchange="autocompletarPorMunicipio()" required class="w-full border border-yellow-400 rounded p-2 bg-white font-semibold text-slate-900 focus:outline-none">
-                        <option value="">-- Seleccionar Municipio --</option>
-                    </select>
-                </div>
+                    <!-- CONSECUTIVO / RADICADO -->
+                    <div class="bg-slate-50 p-2.5 rounded-lg border border-slate-200">
+                        <label class="block font-bold text-slate-700 mb-1">⚡ CONSECUTIVO / RADICADO</label>
+                        <input type="text" id="input-radicado" readonly placeholder="Auto por Servidor" class="w-full border border-slate-300 rounded p-2 bg-white font-mono font-bold text-indigo-700 focus:outline-none">
+                    </div>
 
-                <div>
-                    <label class="block font-medium text-slate-600 mb-1">Funcionario que Entrega (D.T.)</label>
-                    <input type="text" id="input-funcionario" readonly class="w-full border border-slate-300 rounded p-2 bg-slate-50 font-semibold text-slate-800">
-                </div>
+                    <!-- ESTACIÓN / DIRECCIÓN IP -->
+                    <div class="bg-indigo-50 p-2.5 rounded-lg border border-indigo-200">
+                        <label class="block font-bold text-indigo-900 mb-1">🌐 ESTACIÓN / DIRECCIÓN IP</label>
+                        <select id="select-ip-equipo" onchange="actualizarResponsablePorIP()" class="w-full border border-indigo-300 rounded p-2 bg-white font-mono font-bold text-indigo-800 focus:outline-none">
+                            <option value="192.168.20.76">IP: 192.168.20.76 (Maily Sandoval Reyes)</option>
+                            <option value="192.168.20.96">IP: 192.168.20.96 (Thristan Stiven Quintana)</option>
+                            <option value="192.168.20.63">IP: 192.168.20.63 (Ayda Matabajoy Alvarez)</option>
+                        </select>
+                    </div>
 
-                <div>
-                    <label class="block font-medium text-slate-600 mb-1">Cliente / Dispensario</label>
-                    <input type="text" id="input-cliente" readonly class="w-full border border-slate-300 rounded p-2 bg-slate-50 text-slate-700">
-                </div>
+                    <!-- RESPONSABLE ARCHIVO CENTRAL -->
+                    <div class="bg-emerald-50 p-2.5 rounded-lg border border-emerald-200">
+                        <label class="block font-bold text-emerald-900 mb-1">👤 RESPONSABLE ARCHIVO CENTRAL</label>
+                        <input type="text" id="input-responsable" readonly class="w-full border border-emerald-300 rounded p-2 bg-white font-bold text-emerald-800 focus:outline-none">
+                    </div>
 
-                <div>
-                    <label class="block font-medium text-slate-600 mb-1">Fecha de Recibido (Columna D)</label>
-                    <input type="date" id="input-fecha" onchange="calcularDiasGestionAutomatico()" required class="w-full border border-slate-300 rounded p-2">
-                </div>
+                    <!-- MUNICIPIO DE ORIGEN -->
+                    <div class="bg-yellow-50 p-2.5 rounded-lg border border-yellow-300">
+                        <label class="block font-bold text-slate-800 mb-1">📍 MUNICIPIO DE ORIGEN</label>
+                        <select id="input-municipio" onchange="autocompletarPorMunicipio()" required class="w-full border border-yellow-400 rounded p-2 bg-white font-semibold text-slate-900 focus:outline-none">
+                            <option value="">-- Seleccionar Municipio --</option>
+                        </select>
+                    </div>
 
-                <div>
-                    <label class="block font-medium text-slate-600 mb-1">Tipo de Unidad / N° Cajas</label>
-                    <select id="input-unidad" required class="w-full border border-slate-300 rounded p-2 bg-white font-semibold">
-                        <option value="Caja">Caja</option>
-                        <option value="Sobre">Sobre</option>
-                        <option value="Documento">Documento</option>
-                    </select>
-                </div>
+                    <div>
+                        <label class="block font-medium text-slate-600 mb-1">Funcionario que Entrega (D.T.)</label>
+                        <input type="text" id="input-funcionario" readonly class="w-full border border-slate-300 rounded p-2 bg-slate-50 font-semibold text-slate-800">
+                    </div>
 
-                <div>
-                    <label class="block font-medium text-slate-600 mb-1">Proceso / Subproceso</label>
-                    <select id="input-proceso" required class="w-full border border-slate-300 rounded p-2 bg-white font-medium">
-                        <option value="">-- Seleccionar Proceso --</option>
-                        <option value="Comunicaciones">Comunicaciones</option>
-                        <option value="Control Interno">Control Interno</option>
-                        <option value="Gestión de Tecnología e Información">Gestión de Tecnología e Información</option>
-                        <option value="Bienestar">Bienestar</option>
-                        <option value="SGSST">SGSST</option>
-                        <option value="Ventas">Ventas</option>
-                        <option value="Licitaciones">Licitaciones</option>
-                        <option value="Contabilidad">Contabilidad</option>
-                        <option value="Tesorería">Tesorería</option>
-                        <option value="Cartera">Cartera</option>
-                        <option value="Dispensación">Dispensación</option>
-                        <option value="Gestión Documental">Gestión Documental</option>
-                    </select>
-                </div>
+                    <div>
+                        <label class="block font-medium text-slate-600 mb-1">Cliente / Dispensario</label>
+                        <input type="text" id="input-cliente" readonly class="w-full border border-slate-300 rounded p-2 bg-slate-50 text-slate-700">
+                    </div>
 
-                <!-- SERIES/SUBSERIES -->
-                <div>
-                    <label class="block font-medium text-slate-600 mb-1">Series/Subseries Documental</label>
-                    <input type="text" id="input-series" list="opciones-series" value="Actas de Recepción Técnica" required class="w-full border border-slate-300 rounded p-2 font-semibold text-slate-800 bg-white focus:outline-none">
-                    <datalist id="opciones-series">
-                        <option value="Actas de Recepción Técnica">
-                        <option value="Fórmulas y Facturas">
-                        <option value="Comprobantes de Salida / Inventarios">
-                        <option value="Informes de Gestión / Calidad">
-                        <option value="Correspondencia Enviada / Recibida">
-                    </datalist>
-                </div>
+                    <div>
+                        <label class="block font-medium text-slate-600 mb-1">Fecha de Recibido</label>
+                        <input type="date" id="input-fecha" onchange="calcularDiasGestionAutomatico()" required class="w-full border border-slate-300 rounded p-2">
+                    </div>
 
-                <div>
-                    <label class="block font-medium text-slate-600 mb-1">Cantidad (Unidades/Folios)</label>
-                    <input type="number" id="input-cantidad" required min="1" placeholder="0" class="w-full border border-slate-300 rounded p-2 font-bold text-slate-800">
-                </div>
+                    <div>
+                        <label class="block font-medium text-slate-600 mb-1">Tipo de Unidad / N° Cajas</label>
+                        <select id="input-unidad" required class="w-full border border-slate-300 rounded p-2 bg-white font-semibold">
+                            <option value="Caja">Caja</option>
+                            <option value="Sobre">Sobre</option>
+                            <option value="Documento">Documento</option>
+                        </select>
+                    </div>
 
-                <div>
-                    <label class="block font-medium text-slate-600 mb-1">Estado de Gestión</label>
-                    <select id="input-estado" onchange="evaluarFormulaAlerta()" class="w-full border border-slate-300 rounded p-2 font-semibold">
-                        <option value="Por Verificar">Por Verificar</option>
-                        <option value="En Confrontación FUID">En Confrontación FUID</option>
-                        <option value="Archivado Definitivo">Archivado Definitivo</option>
-                    </select>
-                </div>
+                    <!-- CUENTA CON FUID -->
+                    <div class="bg-teal-50 p-2.5 rounded-lg border border-teal-300">
+                        <label class="block font-bold text-teal-900 mb-1">📄 ¿CUENTA CON FUID?</label>
+                        <select id="input-cuenta-fuid" class="w-full border border-teal-400 rounded p-2 bg-white font-bold text-teal-900 focus:outline-none">
+                            <option value="NO" selected>NO</option>
+                            <option value="SI">SI</option>
+                        </select>
+                    </div>
 
-                <!-- FECHA DE CIERRE -->
-                <div class="bg-emerald-50 p-2.5 rounded-lg border border-emerald-300">
-                    <label class="block font-bold text-emerald-900 mb-1">🏁 FECHA DE CIERRE (Columna P)</label>
-                    <input type="date" id="input-fecha-cierre" onchange="evaluarFormulaAlerta()" class="w-full border border-emerald-400 rounded p-2 bg-white font-semibold">
-                </div>
+                    <!-- PROCESO / SUBPROCESO -->
+                    <div>
+                        <label class="block font-medium text-slate-600 mb-1">Proceso / Subproceso</label>
+                        <select id="input-proceso" required class="w-full border border-slate-300 rounded p-2 bg-white font-medium text-xs">
+                            <option value="">-- Seleccionar Proceso / Subproceso --</option>
+                            <optgroup label="Representante Legal">
+                                <option value="Representante Legal">Representante Legal</option>
+                            </optgroup>
+                            <optgroup label="Gerente General">
+                                <option value="Gerente General / Asistente de Gerencia">Gerente General / Asistente de Gerencia</option>
+                                <option value="Gerente General / Comunicaciones">Gerente General / Comunicaciones</option>
+                                <option value="Gerente General / SIAU">Gerente General / SIAU</option>
+                                <option value="Gerente General / Asesoría Jurídica Interna">Gerente General / Asesoría Jurídica Interna</option>
+                            </optgroup>
+                            <optgroup label="Control Interno">
+                                <option value="Control Interno">Control Interno</option>
+                            </optgroup>
+                            <optgroup label="Subgerente">
+                                <option value="Subgerente">Subgerente</option>
+                            </optgroup>
+                            <optgroup label="Gestión Logística">
+                                <option value="Gestión Logística / Gestión Operativa">Gestión Logística / Gestión Operativa</option>
+                                <option value="Gestión Logística / Gestión de Inventarios">Gestión Logística / Gestión de Inventarios</option>
+                                <option value="Gestión Logística / Compras">Gestión Logística / Compras</option>
+                            </optgroup>
+                            <optgroup label="Inteligencia de Negocios y Gestión de la Información">
+                                <option value="Inteligencia de Negocios y Gestión de la Información / Planeación de Compra">Inteligencia de Negocios y Gestión de la Información / Planeación de Compra</option>
+                                <option value="Inteligencia de Negocios y Gestión de la Información / Datos e información">Inteligencia de Negocios y Gestión de la Información / Datos e información</option>
+                                <option value="Inteligencia de Negocios y Gestión de la Información / Parametrización">Inteligencia de Negocios y Gestión de la Información / Parametrización</option>
+                            </optgroup>
+                            <optgroup label="Gestión de Tecnología e Información">
+                                <option value="Gestión de Tecnología e Información / Desarrollo">Gestión de Tecnología e Información / Desarrollo</option>
+                                <option value="Gestión de Tecnología e Información / Soporte">Gestión de Tecnología e Información / Soporte</option>
+                            </optgroup>
+                            <optgroup label="Gestión del Talento Humano">
+                                <option value="Gestión del Talento Humano / Bienestar">Gestión del Talento Humano / Bienestar</option>
+                                <option value="Gestión del Talento Humano / Servicios Generales">Gestión del Talento Humano / Servicios Generales</option>
+                                <option value="Gestión del Talento Humano / SGSST">Gestión del Talento Humano / SGSST</option>
+                            </optgroup>
+                            <optgroup label="Gestión Comercial y Mercadeo">
+                                <option value="Gestión Comercial y Mercadeo / Ventas">Gestión Comercial y Mercadeo / Ventas</option>
+                                <option value="Gestión Comercial y Mercadeo / Licitaciones">Gestión Comercial y Mercadeo / Licitaciones</option>
+                            </optgroup>
+                            <optgroup label="Gestión Financiera y Administrativa">
+                                <option value="Gestión Financiera y Administrativa / Cartera">Gestión Financiera y Administrativa / Cartera</option>
+                                <option value="Gestión Financiera y Administrativa / Contabilidad">Gestión Financiera y Administrativa / Contabilidad</option>
+                                <option value="Gestión Financiera y Administrativa / Recursos Administrativos">Gestión Financiera y Administrativa / Recursos Administrativos</option>
+                                <option value="Gestión Financiera y Administrativa / Tesorería">Gestión Financiera y Administrativa / Tesorería</option>
+                            </optgroup>
+                            <optgroup label="Dispensación">
+                                <option value="Dispensación">Dispensación</option>
+                            </optgroup>
+                            <optgroup label="Gestión de Calidad">
+                                <option value="Gestión de Calidad / Gestión Documental">Gestión de Calidad / Gestión Documental</option>
+                                <option value="Gestión de Calidad / Sistema de Administración del Riesgo - SAR">Gestión de Calidad / Sistema de Administración del Riesgo - SAR</option>
+                            </optgroup>
+                            <optgroup label="Gestión de Cuentas Médicas">
+                                <option value="Gestión de Cuentas Médicas / Auditoría de Cuentas Médicas">Gestión de Cuentas Médicas / Auditoría de Cuentas Médicas</option>
+                                <option value="Gestión de Cuentas Médicas / Facturación y Radicación">Gestión de Cuentas Médicas / Facturación y Radicación</option>
+                            </optgroup>
+                        </select>
+                    </div>
 
-                <div class="lg:col-span-3">
-                    <label class="block font-medium text-slate-600 mb-1">Detalle / Observaciones Estado</label>
-                    <input type="text" id="input-detalle-estado" placeholder="Escriba el detalle..." class="w-full border border-slate-300 rounded p-2 bg-white">
-                </div>
+                    <!-- SERIES/SUBSERIES DOCUMENTAL -->
+                    <div>
+                        <label class="block font-medium text-slate-600 mb-1">Series/Subseries Documental</label>
+                        <input type="text" id="input-series" list="opciones-series" value="Actas de Recepción Técnica" required class="w-full border border-slate-300 rounded p-2 font-semibold text-slate-800 bg-white focus:outline-none">
+                        <datalist id="opciones-series">
+                            <option value="Actas de Recepción Técnica">
+                            <option value="Fórmulas y Facturas">
+                            <option value="Comprobantes de Salida / Inventarios">
+                            <option value="Informes de Gestión / Calidad">
+                            <option value="Correspondencia Enviada / Recibida">
+                        </datalist>
+                    </div>
 
-                <div class="bg-blue-50 p-2.5 rounded-lg border border-blue-300">
-                    <label class="block font-bold text-blue-900 mb-1">⏱️ DÍAS EN GESTIÓN (N)</label>
-                    <input type="number" id="input-dias" readonly class="w-full border border-blue-400 rounded p-2 bg-white font-bold text-blue-900 focus:outline-none">
-                </div>
+                    <div>
+                        <label class="block font-medium text-slate-600 mb-1">Cantidad (Unidades/Folios)</label>
+                        <input type="number" id="input-cantidad" required min="1" placeholder="0" class="w-full border border-slate-300 rounded p-2 font-bold text-slate-800">
+                    </div>
 
-                <div class="bg-amber-50 p-2.5 rounded-lg border border-amber-300 lg:col-span-2">
-                    <label class="block font-bold text-amber-900 mb-1">🚨 ALERTA VENCIMIENTO</label>
-                    <input type="text" id="input-alerta" readonly class="w-full border border-amber-400 rounded p-2 bg-white font-bold text-slate-900 focus:outline-none">
-                </div>
+                    <div>
+                        <label class="block font-medium text-slate-600 mb-1">Estado de Gestión</label>
+                        <select id="input-estado" onchange="calcularDiasGestionAutomatico()" class="w-full border border-slate-300 rounded p-2 font-semibold">
+                            <option value="Por Verificar">Por Verificar</option>
+                            <option value="En Confrontación FUID">En Confrontación FUID</option>
+                            <option value="Archivado Definitivo">Archivado Definitivo</option>
+                        </select>
+                    </div>
 
-                <div class="lg:col-span-1 flex items-end">
-                    <button type="submit" id="btn-guardar" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold p-2.5 rounded shadow transition flex items-center justify-center">
-                        <i data-lucide="plus-circle" class="w-4 h-4 mr-2"></i> Guardar en Drive
-                    </button>
+                    <!-- FECHA DE CIERRE -->
+                    <div class="bg-emerald-50 p-2.5 rounded-lg border border-emerald-300">
+                        <label class="block font-bold text-emerald-900 mb-1">🏁 FECHA DE CIERRE</label>
+                        <input type="date" id="input-fecha-cierre" onchange="calcularDiasGestionAutomatico()" class="w-full border border-emerald-400 rounded p-2 bg-white font-semibold">
+                    </div>
+
+                    <div class="lg:col-span-2">
+                        <label class="block font-medium text-slate-600 mb-1">Detalle / Observaciones Estado</label>
+                        <input type="text" id="input-detalle-estado" placeholder="Escriba el detalle..." class="w-full border border-slate-300 rounded p-2 bg-white">
+                    </div>
+
+                    <div class="bg-blue-50 p-2.5 rounded-lg border border-blue-300">
+                        <label class="block font-bold text-blue-900 mb-1">⏱️️ DÍAS EN GESTIÓN (N)</label>
+                        <input type="number" id="input-dias" readonly class="w-full border border-blue-400 rounded p-2 bg-white font-bold text-blue-900 focus:outline-none" value="0">
+                    </div>
+
+                    <div class="bg-amber-50 p-2.5 rounded-lg border border-amber-300 lg:col-span-2">
+                        <label class="block font-bold text-amber-900 mb-1">🚨 ALERTA VENCIMIENTO</label>
+                        <input type="text" id="input-alerta" readonly class="w-full border border-amber-400 rounded p-2 bg-white font-bold text-slate-900 focus:outline-none">
+                    </div>
+
+                    <div class="lg:col-span-2 flex items-end">
+                        <button type="submit" id="btn-guardar" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold p-2.5 rounded shadow transition flex items-center justify-center">
+                            <i data-lucide="plus-circle" class="w-4 h-4 mr-2"></i> Guardar en Drive
+                        </button>
+                    </div>
+                </form>
+            </div>
+
+            <!-- TABLA MATRIZ CON LAS 17 COLUMNAS EN ORDEN EXACTO -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+                <div class="p-3 bg-slate-800 text-white text-xs font-bold flex justify-between items-center">
+                    <span>MATRIZ EN TIEMPO REAL - HOJA: PRUEBAS</span>
+                    <span id="contador-registros" class="text-slate-300 font-normal">Cargando...</span>
                 </div>
-            </form>
+                <div class="overflow-x-auto">
+                    <table class="w-full border-collapse text-left whitespace-nowrap text-[11px]">
+                        <thead>
+                            <tr class="bg-emerald-700 text-white font-bold divide-x divide-emerald-600">
+                                <th class="px-3 py-2 bg-purple-800 text-white">Contrato</th>
+                                <th class="px-3 py-2 bg-emerald-800">Consecutivo / Radicado</th>
+                                <th class="px-3 py-2 bg-yellow-300 text-slate-900">Cliente</th>
+                                <th class="px-3 py-2 bg-yellow-300 text-slate-900">Fecha Recibido</th>
+                                <th class="px-3 py-2 bg-teal-800 text-white text-center">Cuenta con FUID</th>
+                                <th class="px-3 py-2 bg-yellow-300 text-slate-900">Proceso</th>
+                                <th class="px-3 py-2 bg-yellow-300 text-slate-900">Funcionario Entrega</th>
+                                <th class="px-3 py-2 bg-yellow-300 text-slate-900">Municipio</th>
+                                <th class="px-3 py-2 bg-yellow-300 text-slate-900">Unidad</th>
+                                <th class="px-3 py-2 bg-blue-100 text-slate-800">Series/Subseries</th>
+                                <th class="px-3 py-2 bg-blue-100 text-slate-800 text-center">Cant.</th>
+                                <th class="px-3 py-2 bg-emerald-800 text-white">Responsable Archivo</th>
+                                <th class="px-3 py-2 bg-blue-100 text-slate-800">Estado de Gestión</th>
+                                <th class="px-3 py-2 bg-blue-100 text-slate-800">Detalle Estado</th>
+                                <th class="px-3 py-2 bg-blue-100 text-slate-800 text-center">Días</th>
+                                <th class="px-3 py-2 bg-blue-100 text-slate-800 text-center">Alerta Vencimiento</th>
+                                <th class="px-3 py-2 bg-emerald-800 text-white text-center">Fecha Cierre</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tabla-body" class="divide-y divide-slate-200 bg-white">
+                            <tr id="row-loading">
+                                <td colspan="17" class="px-4 py-8 text-center text-slate-500 font-bold">
+                                    🔄 Sincronizando datos con Google Sheets...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
         </div>
 
-        <!-- Tabla Matriz -->
-        <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-            <div class="p-3 bg-slate-800 text-white text-xs font-bold flex justify-between items-center">
-                <span>MATRIZ EN TIEMPO REAL - SPREADSHEET (ID: 1nWatDC9XuvhbozELdAIMVaH0BD8NmbpKFc8S09g7jis)</span>
-                <span id="contador-registros" class="text-slate-300 font-normal">Cargando...</span>
+        <!-- CONTENEDOR VISTA 2: DASHBOARD -->
+        <div id="vista-dashboard" class="hidden space-y-4">
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex justify-between items-center">
+                <div>
+                    <h2 class="font-bold text-slate-800 text-sm">Dashboard de Analítica e Indicadores</h2>
+                    <p class="text-xs text-slate-500">Conectado en tiempo real a Google Sheets / Google Drive</p>
+                </div>
+                <button type="button" onclick="recargarIframeDashboard()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-700 px-3 py-1.5 rounded-lg font-bold flex items-center border border-slate-300">
+                    <i data-lucide="rotate-cw" class="w-3.5 h-3.5 mr-1"></i> Actualizar Dashboard
+                </button>
             </div>
-            <div class="overflow-x-auto">
-                <table class="w-full border-collapse text-left whitespace-nowrap text-[11px]">
-                    <thead>
-                        <tr class="bg-emerald-700 text-white font-bold divide-x divide-emerald-600">
-                            <th class="px-3 py-2 bg-purple-800 text-white">Contrato</th>
-                            <th class="px-3 py-2 bg-emerald-800">Consecutivo / Radicado</th>
-                            <th class="px-3 py-2 bg-yellow-300 text-slate-900">Cliente</th>
-                            <th class="px-3 py-2 bg-yellow-300 text-slate-900">Fecha Recibido</th>
-                            <th class="px-3 py-2 bg-yellow-300 text-slate-900">Proceso</th>
-                            <th class="px-3 py-2 bg-yellow-300 text-slate-900">Funcionario Entrega</th>
-                            <th class="px-3 py-2 bg-yellow-300 text-slate-900">Municipio</th>
-                            <th class="px-3 py-2 bg-yellow-300 text-slate-900">Unidad</th>
-                            <th class="px-3 py-2 bg-blue-100 text-slate-800">Series/Subseries</th>
-                            <th class="px-3 py-2 bg-blue-100 text-slate-800 text-center">Cant.</th>
-                            <th class="px-3 py-2 bg-emerald-800 text-white">Responsable Archivo</th>
-                            <th class="px-3 py-2 bg-blue-100 text-slate-800">Estado de Gestión</th>
-                            <th class="px-3 py-2 bg-blue-100 text-slate-800">Detalle Estado</th>
-                            <th class="px-3 py-2 bg-blue-100 text-slate-800 text-center">Días</th>
-                            <th class="px-3 py-2 bg-blue-100 text-slate-800 text-center">Alerta Vencimiento</th>
-                            <th class="px-3 py-2 bg-emerald-800 text-white text-center">Fecha Cierre</th>
-                        </tr>
-                    </thead>
-                    <tbody id="tabla-body" class="divide-y divide-slate-200 bg-white">
-                        <tr id="row-loading">
-                            <td colspan="16" class="px-4 py-8 text-center text-slate-500 font-bold">
-                                🔄 Sincronizando datos con Google Sheets...
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
+
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden min-h-[650px] flex items-center justify-center">
+                <iframe id="iframe-dashboard" 
+                        src="https://lookerstudio.google.com/embed/reporting/00000000-0000-0000-0000-000000000000/page/p_12345" 
+                        class="w-full h-[700px] border-0" 
+                        allowfullscreen>
+                </iframe>
             </div>
         </div>
 
     </div>
 
     <script>
-        // Reemplazar la constante API_URL con la URL desplegada de tu Google Apps Script vinculado al nuevo documento.
         const API_URL = "https://script.google.com/macros/s/AKfycbwke38o0tb5Uw3TdHjaY8VdVzmoL-n4RUmmkYd93n80aDWuO8jrCZ308g2OxEcO7zROTg/exec";
 
         let registrosLocales = JSON.parse(localStorage.getItem('registros_control_documental')) || [];
 
-        // MAPA EXCLUSIVO DE IP Y RESPONSABLE
         const mapaIPResponsables = {
             "192.168.20.76": "Maily Sandoval Reyes",
             "192.168.20.96": "Thristan Stiven Quintana",
@@ -238,15 +351,50 @@
         };
 
         const farmaciasData = {
-            "ALMAGUER": { dispensario: "DISPENSARIO MENNAR ALMAGUER 1", director: "LUZ ENEIRA PALECHOR" },
-            "ARGELIA": { dispensario: "DISPENSARIO MENNAR ARGELIA 1", director: "ANDRES DAZA GARZON" },
-            "BALBOA": { dispensario: "DISPENSARIO MENNAR BALBOA 1", director: "CRISTIAN DAVID ZUÑIGA SAMBONI" },
-            "CALDONO": { dispensario: "DISPENSARIO MENNAR CALDONO 1", director: "LUISA ALEJANDRA RAMIREZ VALENCIA" },
-            "CORINTO": { dispensario: "DISPENSARIO MENNAR CORINTO 1", director: "GUSTAVO GIRONZA BONILLA" },
-            "MORALES": { dispensario: "DISPENSARIO MENNAR MORALES 1", director: "VIVIAN ASTRID ZUÑIGA OCAMPO" },
-            "POPAYAN FOMAG": { dispensario: "DISPENSARIO MENNAR POPAYAN FOMAG", director: "ANGELA VIVIANA PALECHOR" },
-            "SANTANDER DE Q": { dispensario: "DISPENSARIO MENNAR SANTANDER DE Q 1", director: "GLEYDIN MARTINEZ MINA" },
-            "TIMBIO": { dispensario: "DISPENSARIO MENNAR TIMBIO 1", director: "CAROL JULIETH DIAZ BURBANO" }
+            "ALMAGUER": { "dispensario": "DISPENSARIO ALMAGUER 1", "director": "PALECHOR QUINAYAZ LUZ ENEIRA" },
+            "ARGELIA": { "dispensario": "DISPENSARIO MENNAR ARGELIA 1", "director": "DAZA GARZON ANDRES" },
+            "BALBOA": { "dispensario": "DISPENSARIO MENNAR BALBOA 1", "director": "ZUÑIGA SAMBONI CRISTIAN  DAVID" },
+            "BOLIVAR": { "dispensario": "DISPENSARIO MENNAR BOLIVAR 1", "director": "GOMEZ ILES ILSA YAMILETH" },
+            "BUENOS AIRES": { "dispensario": "DISPENSARIO MENNAR BUENOS AIRES 1", "director": "ACOSTA MONTAÑO MARIA ISMAELINA" },
+            "CAJIBIO": { "dispensario": "DISPENSARIO MENNAR CAJIBIO 1", "director": "VALENCIA MUÑOZ MAIRA KATERINE" },
+            "CALDONO": { "dispensario": "DISPENSARIO MENNAR CALDONO 1", "director": "RAMIREZ VALENCIA LUISA ALEJANDRA" },
+            "CALOTO": { "dispensario": "DISPENSARIO MENNAR CALOTO", "director": "AGUDELO ROA DIANA MELISA" },
+            "CORINTO": { "dispensario": "DISPENSARIO MENNAR CORINTO 1", "director": "GIRONZA BONILLA GUSTAVO ADOLFO" },
+            "EL TAMBO": { "dispensario": "DISPENSARIO MENNAR EL TAMBO 1", "director": "OLIVEROS PEREZ MILEIDY" },
+            "FLORENCIA": { "dispensario": "DISPENSARIO MENNAR FLORENCIA 1", "director": "SOLARTE CORDOBA EDILBERTO" },
+            "GUACHENE": { "dispensario": "DISPENSARIO MENNAR GUACHENE 1", "director": "PALACIOS APONZA YINA XIMENA" },
+            "GUAPI": { "dispensario": "DISPENSARIO MENNAR GUAPI 1", "director": "CUERO GRUESO PEDRO PASCUAL" },
+            "INZA": { "dispensario": "DISPENSARIO MENNAR INZA 1", "director": "CHASQUI PENCUE LESVI GIMENA" },
+            "JAMBALO": { "dispensario": "DISPENSARIO MENNAR JAMBALÓ 1", "director": "ESCOBAR ORTIZ RUBIEL HOMERO" },
+            "LA SIERRA": { "dispensario": "DISPENSARIO MENNAR LA SIERRA 1", "director": "TINTINAGO SOLARTE ANDRES FELIPE" },
+            "LA VEGA": { "dispensario": "DISPENSARIO MENNAR LA VEGA 1", "director": "GOMEZ MAMIAN ZULMA" },
+            "MERCADERES": { "dispensario": "DISPENSARIO MENNAR MERCADERES 1", "director": "MAMIAN MUÑOZ MELISA" },
+            "MIRANDA": { "dispensario": "DISPENSARIO MENNAR MIRANDA 1", "director": "PENAGOS VELASCO DIANA MARCELA" },
+            "MORALES": { "dispensario": "DISPENSARIO MENNAR MORALES 1", "director": "ZUÑIGA OCAMPO VIVIAN ASTRID" },
+            "PADILLA": { "dispensario": "DISPENSARIO MENNAR PADILLA 1", "director": "MONTOYA MINA NORALBA" },
+            "PAEZ": { "dispensario": "DISPENSARIO MENNAR PAEZ 1", "director": "GUGU COLLO MARIA DANIELA" },
+            "PATIA": { "dispensario": "DISPENSARIO MENNAR PATIA 1", "director": "CAICEDO CAICEDO MAR LUCY" },
+            "PIAMONTE": { "dispensario": "DISPENSARIO MENNAR PIAMONTE 1", "director": "JIMENEZ GARCIA ERIKA NATALIA" },
+            "PIENDAMO": { "dispensario": "DISPENSARIO MENNAR PIENDAMO 1", "director": "COLLAZOS VELASCO FRANCY ALEXANDRA" },
+            "POPAYAN FOMAG": { "dispensario": "DISPENSARIO MENNAR 1", "director": "PIAMBA POTOSI MARIA ALEXANDRA" },
+            "POPAYAN NEPS 2": { "dispensario": "DISPENSARIO MENNAR 2", "director": "URREA HERRERA SANDRA LILIANA" },
+            "POPAYAN NEPS 4": { "dispensario": "DISPENSARIO MENNAR 4", "director": "HERRERA ARIAS JULIAN" },
+            "POPAYAN NEPS 5": { "dispensario": "DISPENSARIO MENNAR 5", "director": "MAMIAN NARVAEZ NATALY" },
+            "PUERTO TEJADA": { "dispensario": "DISPENSARIO MENNAR PUERTO TEJADA 1", "director": "MINA BARONA JENNY PATRICIA" },
+            "PURACE": { "dispensario": "DISPENSARIO MENNAR PURACE 1", "director": "NOGUIL ORDOÑEZ BRIGITTE CAROLINA" },
+            "ROSAS": { "dispensario": "DISPENSARIO MENNAR ROSAS 1", "director": "CABRERA NARVAEZ LEIDY VIVIANA" },
+            "SAN SEBASTIAN": { "dispensario": "DISPENSARIO MENNAR SAN SEBASTIÁN 1", "director": "RUIZ GOMEZ MARIBEL" },
+            "SANTA ROSA": { "dispensario": "DISPENSARIO MENNAR SANTA ROSA 1", "director": "GIRON BAMBAGUE YUDY PAOLA" },
+            "SANTANDER DE Q": { "dispensario": "DISPENSARIO MENNAR SANTANDER DE QUILICHAO 1", "director": "MARTINEZ MINA GLEYDIN" },
+            "SILVIA": { "dispensario": "DISPENSARIO MENNAR SILVIA 1", "director": "HURTADO CHAVACO GLORIA" },
+            "SOTARA": { "dispensario": "DISPENSARIO MENNAR SOTARA 1", "director": "MARTINEZ CORDOBA RODRIGO" },
+            "SUAREZ": { "dispensario": "DISPENSARIO MENNAR SUAREZ 1", "director": "RODRIGUEZ AGRONO THALIA" },
+            "SUCRE": { "dispensario": "DISPENSARIO MENNAR SUCRE 1", "director": "MAMIAN HURTADO LUCELY" },
+            "TIMBIO": { "dispensario": "DISPENSARIO MENNAR TIMBIO 1", "director": "DIAZ BURBANO CAROL JULIETH" },
+            "TIMBIQUI": { "dispensario": "DISPENSARIO MENNAR TIMBIQUI 1", "director": "SINISTERRA SOLIS LEONILA" },
+            "TORIBIO": { "dispensario": "DISPENSARIO MENNAR TORIBIO 1", "director": "CUETIA TORRES LEYDI DIDIANA" },
+            "TOTORO": { "dispensario": "DISPENSARIO MENNAR TOTORO 1", "director": "CASAMACHIN DAGUA KEVIN ENRIQUE" },
+            "VILLA RICA": { "dispensario": "DISPENSARIO MENNAR VILLA RICA 1", "director": "LUCUMI HURTADO LADYS YAZMIN" }
         };
 
         document.addEventListener('DOMContentLoaded', () => {
@@ -257,21 +405,114 @@
                 selectMun.innerHTML += `<option value="${m}">${m}</option>`;
             });
 
-            document.getElementById('input-fecha').valueAsDate = new Date();
+            // Fecha actual por defecto en formato YYYY-MM-DD
+            const hoy = new Date();
+            const fechaHoyStr = hoy.getFullYear() + '-' + String(hoy.getMonth() + 1).padStart(2, '0') + '-' + String(hoy.getDate()).padStart(2, '0');
+            document.getElementById('input-fecha').value = fechaHoyStr;
             
-            // Intenta detectar la IP local automáticamente al cargar la página
             detectarIPLocalYActualizar();
-            
             calcularDiasGestionAutomatico();
             renderTabla(registrosLocales);
             cargarDatosDesdeDrive();
         });
 
-        // DETECCIÓN AUTOMÁTICA DE LA IP DEL EQUIPO
-        function detectarIPLocalYActualizar() {
-            actualizarResponsablePorIP(); // Valor por defecto inicial
+        function cambiarVista(vista) {
+            const vistaMatriz = document.getElementById('vista-matriz');
+            const vistaDashboard = document.getElementById('vista-dashboard');
+            const btnMatriz = document.getElementById('btn-vista-matriz');
+            const btnDashboard = document.getElementById('btn-vista-dashboard');
 
-            // Intenta leer la IP local del equipo usando RTCPeerConnection
+            if (vista === 'matriz') {
+                vistaMatriz.classList.remove('hidden');
+                vistaDashboard.classList.add('hidden');
+                btnMatriz.className = "bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-sm";
+                btnDashboard.className = "bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-sm";
+            } else {
+                vistaMatriz.classList.add('hidden');
+                vistaDashboard.classList.remove('hidden');
+                btnDashboard.className = "bg-emerald-600 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-sm";
+                btnMatriz.className = "bg-slate-700 hover:bg-slate-600 text-slate-200 px-3 py-1.5 rounded-lg text-xs font-bold transition flex items-center shadow-sm";
+            }
+        }
+
+        function recargarIframeDashboard() {
+            const iframe = document.getElementById('iframe-dashboard');
+            iframe.src = iframe.src;
+        }
+
+        function obtenerObjetoFecha(strFecha) {
+            if (!strFecha || strFecha.trim() === "") return null;
+            const partes = strFecha.split('T')[0].split('-');
+            if (partes.length === 3) {
+                return new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
+            }
+            return null;
+        }
+
+        function calcularDiasEntreFechas(fInicioStr, fFinStr) {
+            const fInicio = obtenerObjetoFecha(fInicioStr);
+            if (!fInicio) return 0;
+
+            let fFin = obtenerObjetoFecha(fFinStr);
+            if (!fFin) {
+                fFin = new Date();
+                fFin.setHours(0, 0, 0, 0);
+            }
+
+            const diffTime = fFin.getTime() - fInicio.getTime();
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+            return diffDays > 0 ? diffDays : 0;
+        }
+
+        function calcularDiasGestionAutomatico() {
+            const fechaRecibidoStr = document.getElementById('input-fecha').value;
+            const fechaCierreStr = document.getElementById('input-fecha-cierre').value;
+
+            const dias = calcularDiasEntreFechas(fechaRecibidoStr, fechaCierreStr);
+            document.getElementById('input-dias').value = dias;
+
+            evaluarFormulaAlerta();
+        }
+
+        function evaluarFormulaAlerta() {
+            const estadoGest = document.getElementById('input-estado').value;
+            const fechaCierre = document.getElementById('input-fecha-cierre').value;
+            const dias = Number(document.getElementById('input-dias').value || 0);
+            const alertaInput = document.getElementById('input-alerta');
+
+            if (fechaCierre || estadoGest === "Archivado Definitivo") {
+                alertaInput.value = "✅ Cerrado";
+            } else if (dias >= 6) {
+                alertaInput.value = "🔴 Vencido";
+            } else if (dias >= 5) {
+                alertaInput.value = "🟡 Próximo a vencer";
+            } else {
+                alertaInput.value = "🟢 A Tiempo";
+            }
+        }
+
+        function actualizarKPIs(kpiData) {
+            if (kpiData) {
+                document.getElementById('kpi-total').innerText = kpiData.total;
+                document.getElementById('kpi-fuid-ok').innerText = kpiData.fuidOk;
+                document.getElementById('kpi-porcentaje-fuid').innerText = `${kpiData.porcentaje}%`;
+            } else {
+                const totalRecibidos = registrosLocales.length;
+                const fuidCorrectos = registrosLocales.filter(r => 
+                    r.cuentaFuid === "SI" || 
+                    r.estado === "Archivado Definitivo" || 
+                    (r.alerta && r.alerta.includes("Cerrado"))
+                ).length;
+                const pct = totalRecibidos > 0 ? ((fuidCorrectos / totalRecibidos) * 100).toFixed(1) : "0.0";
+
+                document.getElementById('kpi-total').innerText = totalRecibidos;
+                document.getElementById('kpi-fuid-ok').innerText = fuidCorrectos;
+                document.getElementById('kpi-porcentaje-fuid').innerText = `${pct}%`;
+            }
+        }
+
+        function detectarIPLocalYActualizar() {
+            actualizarResponsablePorIP();
             const pc = new RTCPeerConnection({ iceServers: [] });
             pc.createDataChannel('');
             pc.createOffer().then(offer => pc.setLocalDescription(offer)).catch(() => {});
@@ -296,39 +537,6 @@
             document.getElementById('input-responsable').value = mapaIPResponsables[ipSeleccionada] || "Responsable no asignado";
         }
 
-        function calcularDiasGestionAutomatico() {
-            const fechaRecibidoStr = document.getElementById('input-fecha').value;
-            if (fechaRecibidoStr) {
-                const [yyyy, mm, dd] = fechaRecibidoStr.split('-').map(Number);
-                const fechaRecibido = new Date(yyyy, mm - 1, dd);
-                const hoy = new Date();
-                hoy.setHours(0, 0, 0, 0);
-
-                const diffDays = Math.max(0, Math.floor((hoy - fechaRecibido) / (1000 * 60 * 60 * 24)));
-                document.getElementById('input-dias').value = diffDays;
-            } else {
-                document.getElementById('input-dias').value = 0;
-            }
-            evaluarFormulaAlerta();
-        }
-
-        function evaluarFormulaAlerta() {
-            const estadoGest = document.getElementById('input-estado').value;
-            const fechaCierre = document.getElementById('input-fecha-cierre').value;
-            const dias = Number(document.getElementById('input-dias').value || 0);
-            const alertaInput = document.getElementById('input-alerta');
-
-            if (fechaCierre || estadoGest === "Archivado Definitivo") {
-                alertaInput.value = "✅ Cerrado";
-            } else if (dias >= 6) {
-                alertaInput.value = "🔴 Vencido";
-            } else if (dias >= 5) {
-                alertaInput.value = "🟡 Próximo a vencer";
-            } else {
-                alertaInput.value = "🟢 A Tiempo";
-            }
-        }
-
         function generarRadicadoInmediato() {
             const contadorSecuencia = registrosLocales.length + 1;
             const numFormateado = String(contadorSecuencia).padStart(3, '0');
@@ -339,25 +547,41 @@
             fetch(API_URL)
                 .then(res => res.json())
                 .then(data => {
-                    if (data && Array.isArray(data) && data.length > 0) {
-                        registrosLocales = data;
+                    let listaRegistros = [];
+                    let kpiData = null;
+
+                    if (data && data.registros) {
+                        listaRegistros = data.registros;
+                        kpiData = data.kpi;
+                    } else if (Array.isArray(data)) {
+                        listaRegistros = data;
+                    }
+
+                    if (listaRegistros.length > 0) {
+                        registrosLocales = listaRegistros;
                         localStorage.setItem('registros_control_documental', JSON.stringify(registrosLocales));
                         renderTabla(registrosLocales);
+                        actualizarKPIs(kpiData);
+                    } else {
+                        actualizarKPIs(kpiData);
                     }
                 })
                 .catch(err => {
-                    console.log("Servidor no disponible momentáneamente, cargando copia local.");
+                    console.log("Cargando desde copia local.");
+                    actualizarKPIs(null);
                 });
         }
 
+        // RENDERIZADO CORREGIDO DE LAS 17 COLUMNAS EN ORDEN EXACTO
         function renderTabla(registros) {
             const tbody = document.getElementById('tabla-body');
             tbody.innerHTML = '';
 
             if (!registros || registros.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="16" class="p-4 text-center text-slate-400 font-bold">Sin registros guardados.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="17" class="p-4 text-center text-slate-400 font-bold">Sin registros guardados.</td></tr>`;
                 document.getElementById('contador-registros').innerText = "0 registros";
                 generarRadicadoInmediato();
+                actualizarKPIs(null);
                 return;
             }
 
@@ -365,34 +589,56 @@
 
             [...registros].reverse().forEach(r => {
                 const tr = document.createElement('tr');
-                const esCerrado = (r.alerta && r.alerta.includes("Cerrado")) || (r.fechaCierre && r.fechaCierre.trim() !== "");
                 
+                const diasCalculados = calcularDiasEntreFechas(r.fecha, r.fechaCierre);
+
+                let alertaCalculada = r.alerta || "";
+                const esCerrado = (r.fechaCierre && String(r.fechaCierre).trim() !== "") || r.estado === "Archivado Definitivo";
+
+                if (esCerrado) {
+                    alertaCalculada = "✅ Cerrado";
+                } else if (diasCalculados >= 6) {
+                    alertaCalculada = "🔴 Vencido";
+                } else if (diasCalculados >= 5) {
+                    alertaCalculada = "🟡 Próximo a vencer";
+                } else {
+                    alertaCalculada = "🟢 A Tiempo";
+                }
+
+                const cuentaFuidVal = r.cuentaFuid || "NO";
+                const fuidBadgeClass = cuentaFuidVal === "SI" 
+                    ? "bg-emerald-100 text-emerald-800 border border-emerald-300" 
+                    : "bg-rose-100 text-rose-800 border border-rose-300";
+
                 tr.className = esCerrado 
                     ? "bg-emerald-50 hover:bg-emerald-100 transition border-b border-emerald-200 divide-x divide-emerald-100 text-emerald-950 font-medium" 
                     : "hover:bg-slate-50 transition border-b border-slate-200 divide-x divide-slate-100";
 
+                // MAPPING DE LAS 17 COLUMNAS (A -> Q)
                 tr.innerHTML = `
                     <td class="px-3 py-2 font-bold text-purple-900 bg-purple-50/50">${r.contrato || ''}</td>
                     <td class="px-3 py-2 font-mono font-bold text-indigo-600">${r.radicado || ''}</td>
                     <td class="px-3 py-2 font-medium">${r.cliente || ''}</td>
-                    <td class="px-3 py-2">${r.fecha || ''}</td>
+                    <td class="px-3 py-2 text-center">${r.fecha || ''}</td>
+                    <td class="px-3 py-2 text-center"><span class="px-2 py-0.5 rounded font-bold text-[10px] ${fuidBadgeClass}">${cuentaFuidVal}</span></td>
                     <td class="px-3 py-2">${r.proceso || ''}</td>
                     <td class="px-3 py-2 font-semibold text-slate-800">${r.funcionario || ''}</td>
                     <td class="px-3 py-2 font-bold text-emerald-700">${r.municipio || ''}</td>
                     <td class="px-3 py-2 font-semibold">${r.unidad || ''}</td>
                     <td class="px-3 py-2">${r.series || ''}</td>
-                    <td class="px-3 py-2 text-center font-bold text-slate-800">${r.cantidad ? Number(r.cantidad).toLocaleString() : '0'}</td>
+                    <td class="px-3 py-2 text-center font-bold text-slate-800">${r.cantidad !== undefined && r.cantidad !== null && !isNaN(r.cantidad) ? Number(r.cantidad).toLocaleString() : '0'}</td>
                     <td class="px-3 py-2 font-bold text-emerald-800">${r.responsable || ''}</td>
                     <td class="px-3 py-2"><span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-semibold">${r.estado || ''}</span></td>
                     <td class="px-3 py-2 text-slate-600">${r.detalleEstado || ''}</td>
-                    <td class="px-3 py-2 text-center font-bold text-blue-900">${r.dias || '0'}</td>
-                    <td class="px-3 py-2 text-center font-bold">${r.alerta || ''}</td>
+                    <td class="px-3 py-2 text-center font-bold text-blue-900">${diasCalculados}</td>
+                    <td class="px-3 py-2 text-center font-bold">${alertaCalculada}</td>
                     <td class="px-3 py-2 text-center font-semibold text-emerald-900">${r.fechaCierre || ''}</td>
                 `;
                 tbody.appendChild(tr);
             });
 
             document.getElementById('contador-registros').innerText = `${registros.length} registro(s) guardado(s)`;
+            actualizarKPIs(null);
         }
 
         function registrarEnDrive(e) {
@@ -401,11 +647,14 @@
             btn.disabled = true;
             btn.innerText = "Guardando...";
 
+            calcularDiasGestionAutomatico();
+
             const nuevoRegistro = {
                 contrato: document.getElementById('input-contrato').value,
                 radicado: document.getElementById('input-radicado').value,
                 cliente: document.getElementById('input-cliente').value,
                 fecha: document.getElementById('input-fecha').value,
+                cuentaFuid: document.getElementById('input-cuenta-fuid').value,
                 proceso: document.getElementById('input-proceso').value,
                 funcionario: document.getElementById('input-funcionario').value,
                 municipio: document.getElementById('input-municipio').value,
@@ -447,10 +696,16 @@
 
         function limpiarFormulario() {
             document.getElementById('input-contrato').value = '';
+            document.getElementById('input-cuenta-fuid').value = 'NO';
             document.getElementById('input-series').value = 'Actas de Recepción Técnica';
             document.getElementById('input-cantidad').value = '';
             document.getElementById('input-detalle-estado').value = '';
             document.getElementById('input-fecha-cierre').value = '';
+
+            const hoy = new Date();
+            const fechaHoyStr = hoy.getFullYear() + '-' + String(hoy.getMonth() + 1).padStart(2, '0') + '-' + String(hoy.getDate()).padStart(2, '0');
+            document.getElementById('input-fecha').value = fechaHoyStr;
+            calcularDiasGestionAutomatico();
         }
 
         function restablecerRegistrosLocales() {
