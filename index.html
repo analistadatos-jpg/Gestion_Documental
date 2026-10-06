@@ -274,7 +274,7 @@
                 </form>
             </div>
 
-            <!-- TABLA MATRIZ CON LAS 17 COLUMNAS EN ORDEN EXACTO -->
+            <!-- TABLA MATRIZ CON LAS 17 COLUMNAS EN ORDEN EXACTO DE GOOGLE SHEETS -->
             <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
                 <div class="p-3 bg-slate-800 text-white text-xs font-bold flex justify-between items-center">
                     <span>MATRIZ EN TIEMPO REAL - HOJA: PRUEBAS</span>
@@ -499,8 +499,8 @@
             } else {
                 const totalRecibidos = registrosLocales.length;
                 const fuidCorrectos = registrosLocales.filter(r => 
-                    r.cuentaFuid === "SI" || 
-                    r.estado === "Archivado Definitivo" || 
+                    (r.cuentaFuid === "SI") || 
+                    (r.estado === "Archivado Definitivo") || 
                     (r.alerta && r.alerta.includes("Cerrado"))
                 ).length;
                 const pct = totalRecibidos > 0 ? ((fuidCorrectos / totalRecibidos) * 100).toFixed(1) : "0.0";
@@ -551,7 +551,26 @@
                     let kpiData = null;
 
                     if (data && data.registros) {
-                        listaRegistros = data.registros;
+                        // NORMALIZAR OBJETO QUE LLEGA DESDE APPS SCRIPT AL MODELO LOCAL
+                        listaRegistros = data.registros.map(r => ({
+                            contrato: r.contrato || "",
+                            radicado: r.radicado || "",
+                            cliente: r.cliente || "",
+                            fecha: r.fechaRecibido || r.fecha || "",
+                            cuentaFuid: r.cuentaFuid || "NO",
+                            proceso: r.proceso || "",
+                            funcionario: r.funcionarioEntrega || r.funcionario || "",
+                            municipio: r.municipio || "",
+                            unidad: r.unidad || "",
+                            series: r.seriesSubseries || r.series || "",
+                            cantidad: r.cantidad || 0,
+                            responsable: r.responsableArchivo || r.responsable || "",
+                            estado: r.estadoGestion || r.estado || "",
+                            detalleEstado: r.detalleEstado || "",
+                            dias: r.dias || 0,
+                            alerta: r.alertaVencimiento || r.alerta || "",
+                            fechaCierre: r.fechaCierre || ""
+                        }));
                         kpiData = data.kpi;
                     } else if (Array.isArray(data)) {
                         listaRegistros = data;
@@ -572,7 +591,7 @@
                 });
         }
 
-        // RENDERIZADO CORREGIDO DE LAS 17 COLUMNAS EN ORDEN EXACTO
+        // RENDERIZADO ALINEADO CON LAS 17 COLUMNAS EN ORDEN EXACTO
         function renderTabla(registros) {
             const tbody = document.getElementById('tabla-body');
             tbody.innerHTML = '';
@@ -590,10 +609,12 @@
             [...registros].reverse().forEach(r => {
                 const tr = document.createElement('tr');
                 
-                const diasCalculados = calcularDiasEntreFechas(r.fecha, r.fechaCierre);
+                const fechaRecibido = r.fecha || r.fechaRecibido || "";
+                const fechaCierre = r.fechaCierre || "";
+                const diasCalculados = calcularDiasEntreFechas(fechaRecibido, fechaCierre);
 
-                let alertaCalculada = r.alerta || "";
-                const esCerrado = (r.fechaCierre && String(r.fechaCierre).trim() !== "") || r.estado === "Archivado Definitivo";
+                let alertaCalculada = r.alerta || r.alertaVencimiento || "";
+                const esCerrado = (fechaCierre && String(fechaCierre).trim() !== "") || (r.estado || r.estadoGestion) === "Archivado Definitivo";
 
                 if (esCerrado) {
                     alertaCalculada = "✅ Cerrado";
@@ -619,20 +640,20 @@
                     <td class="px-3 py-2 font-bold text-purple-900 bg-purple-50/50">${r.contrato || ''}</td>
                     <td class="px-3 py-2 font-mono font-bold text-indigo-600">${r.radicado || ''}</td>
                     <td class="px-3 py-2 font-medium">${r.cliente || ''}</td>
-                    <td class="px-3 py-2 text-center">${r.fecha || ''}</td>
+                    <td class="px-3 py-2 text-center">${fechaRecibido}</td>
                     <td class="px-3 py-2 text-center"><span class="px-2 py-0.5 rounded font-bold text-[10px] ${fuidBadgeClass}">${cuentaFuidVal}</span></td>
                     <td class="px-3 py-2">${r.proceso || ''}</td>
-                    <td class="px-3 py-2 font-semibold text-slate-800">${r.funcionario || ''}</td>
+                    <td class="px-3 py-2 font-semibold text-slate-800">${r.funcionario || r.funcionarioEntrega || ''}</td>
                     <td class="px-3 py-2 font-bold text-emerald-700">${r.municipio || ''}</td>
                     <td class="px-3 py-2 font-semibold">${r.unidad || ''}</td>
-                    <td class="px-3 py-2">${r.series || ''}</td>
+                    <td class="px-3 py-2">${r.series || r.seriesSubseries || ''}</td>
                     <td class="px-3 py-2 text-center font-bold text-slate-800">${r.cantidad !== undefined && r.cantidad !== null && !isNaN(r.cantidad) ? Number(r.cantidad).toLocaleString() : '0'}</td>
-                    <td class="px-3 py-2 font-bold text-emerald-800">${r.responsable || ''}</td>
-                    <td class="px-3 py-2"><span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-semibold">${r.estado || ''}</span></td>
+                    <td class="px-3 py-2 font-bold text-emerald-800">${r.responsable || r.responsableArchivo || ''}</td>
+                    <td class="px-3 py-2"><span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-semibold">${r.estado || r.estadoGestion || ''}</span></td>
                     <td class="px-3 py-2 text-slate-600">${r.detalleEstado || ''}</td>
                     <td class="px-3 py-2 text-center font-bold text-blue-900">${diasCalculados}</td>
                     <td class="px-3 py-2 text-center font-bold">${alertaCalculada}</td>
-                    <td class="px-3 py-2 text-center font-semibold text-emerald-900">${r.fechaCierre || ''}</td>
+                    <td class="px-3 py-2 text-center font-semibold text-emerald-900">${fechaCierre}</td>
                 `;
                 tbody.appendChild(tr);
             });
@@ -654,18 +675,24 @@
                 radicado: document.getElementById('input-radicado').value,
                 cliente: document.getElementById('input-cliente').value,
                 fecha: document.getElementById('input-fecha').value,
+                fechaRecibido: document.getElementById('input-fecha').value,
                 cuentaFuid: document.getElementById('input-cuenta-fuid').value,
                 proceso: document.getElementById('input-proceso').value,
                 funcionario: document.getElementById('input-funcionario').value,
+                funcionarioEntrega: document.getElementById('input-funcionario').value,
                 municipio: document.getElementById('input-municipio').value,
                 unidad: document.getElementById('input-unidad').value,
                 series: document.getElementById('input-series').value,
+                seriesSubseries: document.getElementById('input-series').value,
                 cantidad: document.getElementById('input-cantidad').value,
                 responsable: document.getElementById('input-responsable').value,
+                responsableArchivo: document.getElementById('input-responsable').value,
                 estado: document.getElementById('input-estado').value,
+                estadoGestion: document.getElementById('input-estado').value,
                 detalleEstado: document.getElementById('input-detalle-estado').value,
                 dias: document.getElementById('input-dias').value,
                 alerta: document.getElementById('input-alerta').value,
+                alertaVencimiento: document.getElementById('input-alerta').value,
                 fechaCierre: document.getElementById('input-fecha-cierre').value
             };
 
