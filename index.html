@@ -12,7 +12,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
     <style>
-        /* Estilos e Identidad Visual Mennar S.A.S. */
         :root {
             --mennar-navy: #0d2847;
             --mennar-navy-light: #1e3a5f;
@@ -26,19 +25,6 @@
         .bg-mennar-green { background-color: var(--mennar-green); }
         .text-mennar-green { color: var(--mennar-green); }
         .border-mennar-green { border-color: var(--mennar-green); }
-
-        /* Efectos Cilíndricos y Sombras para Gráficos 3D */
-        .chart-3d-container {
-            perspective: 1000px;
-            filter: drop-shadow(0px 12px 10px rgba(13, 40, 71, 0.18));
-        }
-        .canvas-3d {
-            transform: rotateX(12deg);
-            transition: transform 0.4s ease;
-        }
-        .canvas-3d:hover {
-            transform: rotateX(0deg) scale(1.02);
-        }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans p-3 md:p-5 min-h-screen">
@@ -65,10 +51,10 @@
                     <i data-lucide="table" class="w-4 h-4 mr-1.5"></i> Formulario y Matriz
                 </button>
                 <button type="button" onclick="cambiarVista('dashboard')" id="btn-vista-dashboard" class="bg-slate-800 hover:bg-slate-700 text-slate-200 px-3.5 py-2 rounded-xl text-xs font-bold transition flex items-center shadow">
-                    <i data-lucide="pie-chart" class="w-4 h-4 mr-1.5"></i> Dashboard 3D
+                    <i data-lucide="pie-chart" class="w-4 h-4 mr-1.5"></i> Dashboard
                 </button>
                 <button type="button" onclick="cargarDatosDesdeDrive(true)" class="bg-amber-500 hover:bg-amber-400 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black transition flex items-center shadow">
-                    <i data-lucide="zap" class="w-4 h-4 mr-1.5"></i> Sync Ultrarrápida
+                    <i data-lucide="rotate-cw" class="w-4 h-4 mr-1.5"></i> Sincronizar
                 </button>
                 <button type="button" onclick="vaciarTodoGlobal()" class="bg-rose-700 hover:bg-rose-600 text-white px-3.5 py-2 rounded-xl text-xs font-black transition flex items-center shadow" title="Vaciar toda la base de datos de la App y de Google Drive">
                     <i data-lucide="trash-2" class="w-4 h-4 mr-1.5"></i> Vaciar Todo Global
@@ -116,7 +102,6 @@
             <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-6 space-y-4">
                 <form id="transfer-form" onsubmit="registrarEnDrive(event)" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 text-xs">
                     
-                    <!-- CONTRATO -->
                     <div class="bg-purple-50 p-2.5 rounded-xl border border-purple-200">
                         <label class="block font-bold text-purple-900 mb-1">📋 CONTRATO</label>
                         <select id="input-contrato" required class="w-full border border-purple-300 rounded-lg p-2 bg-white font-bold text-purple-900 focus:outline-none">
@@ -127,19 +112,16 @@
                         </select>
                     </div>
 
-                    <!-- CONSECUTIVO / RADICADO -->
                     <div class="bg-slate-50 p-2.5 rounded-xl border border-slate-200">
                         <label class="block font-bold text-slate-700 mb-1">⚡ CONSECUTIVO / RADICADO</label>
                         <input type="text" id="input-radicado" readonly placeholder="Auto por Servidor" class="w-full border border-slate-300 rounded-lg p-2 bg-white font-mono font-bold text-indigo-700 focus:outline-none">
                     </div>
 
-                    <!-- RESPONSABLE ARCHIVO CENTRAL -->
                     <div class="bg-emerald-50 p-2.5 rounded-xl border border-emerald-200">
                         <label class="block font-bold text-emerald-900 mb-1">👤 RESPONSABLE ARCHIVO CENTRAL</label>
                         <input type="text" id="input-responsable" readonly class="w-full border border-emerald-300 rounded-lg p-2 bg-white font-bold text-emerald-800 focus:outline-none">
                     </div>
 
-                    <!-- PROCESO / SUBPROCESO -->
                     <div>
                         <label class="block font-medium text-slate-600 mb-1">Proceso / Subproceso</label>
                         <select id="input-proceso" onchange="alCambiarProceso()" required class="w-full border border-slate-300 rounded-lg p-2 bg-white font-medium">
@@ -147,7 +129,6 @@
                         </select>
                     </div>
 
-                    <!-- FUNCIONARIO QUE ENTREGA -->
                     <div>
                         <label class="block font-medium text-slate-600 mb-1">Funcionario que Entrega (D.T.)</label>
                         <select id="input-funcionario" onchange="alCambiarFuncionario()" required class="w-full border border-slate-300 rounded-lg p-2 bg-white font-semibold text-slate-800">
@@ -155,13 +136,11 @@
                         </select>
                     </div>
 
-                    <!-- CARGO -->
                     <div>
                         <label class="block font-medium text-slate-600 mb-1">Cargo</label>
                         <input type="text" id="input-cargo" placeholder="Cargo asignado..." class="w-full border border-slate-300 rounded-lg p-2 bg-white font-semibold text-slate-800">
                     </div>
 
-                    <!-- PUNTO ORIGEN / ÁREA -->
                     <div class="bg-yellow-50 p-2.5 rounded-xl border border-yellow-300">
                         <label class="block font-bold text-slate-900 mb-1">📍 PUNTO ORIGEN / ÁREA</label>
                         <select id="input-area" onchange="alCambiarArea()" required class="w-full border border-yellow-400 rounded-lg p-2 bg-white font-semibold text-slate-900 focus:outline-none">
@@ -169,7 +148,6 @@
                         </select>
                     </div>
 
-                    <!-- CLIENTE / DISPENSARIO -->
                     <div>
                         <label class="block font-medium text-slate-600 mb-1">Cliente / Dispensario</label>
                         <input type="text" id="input-cliente" placeholder="Escriba cliente/dispensario..." class="w-full border border-slate-300 rounded-lg p-2 bg-white font-semibold text-slate-800">
@@ -189,7 +167,6 @@
                         </select>
                     </div>
 
-                    <!-- CUENTA CON FUID -->
                     <div class="bg-teal-50 p-2.5 rounded-xl border border-teal-300">
                         <label class="block font-bold text-teal-900 mb-1">📄 ¿CUENTA CON FUID?</label>
                         <select id="input-cuenta-fuid" class="w-full border border-teal-400 rounded-lg p-2 bg-white font-bold text-teal-900 focus:outline-none">
@@ -198,7 +175,6 @@
                         </select>
                     </div>
 
-                    <!-- SERIES/SUBSERIES DOCUMENTAL -->
                     <div>
                         <label class="block font-medium text-slate-600 mb-1">Series/Subseries Documental</label>
                         <input type="text" id="input-series" list="opciones-series" value="Actas de Recepción Técnica" required class="w-full border border-slate-300 rounded-lg p-2 font-semibold text-slate-800 bg-white">
@@ -225,7 +201,6 @@
                         </select>
                     </div>
 
-                    <!-- FECHA DE CIERRE -->
                     <div class="bg-emerald-50 p-2.5 rounded-xl border border-emerald-300">
                         <label class="block font-bold text-emerald-900 mb-1">🏁 FECHA DE CIERRE</label>
                         <input type="date" id="input-fecha-cierre" onchange="calcularDiasGestionAutomatico()" class="w-full border border-emerald-400 rounded-lg p-2 bg-white font-semibold">
@@ -236,13 +211,11 @@
                         <input type="text" id="input-detalle-estado" placeholder="Escriba el detalle..." class="w-full border border-slate-300 rounded-lg p-2 bg-white">
                     </div>
 
-                    <!-- DÍAS HÁBILES EN GESTIÓN -->
                     <div class="bg-blue-50 p-2.5 rounded-xl border border-blue-300">
                         <label class="block font-bold text-blue-900 mb-1">⏱ DÍAS HÁBILES EN GESTIÓN</label>
                         <input type="number" id="input-dias" readonly class="w-full border border-blue-400 rounded-lg p-2 bg-white font-bold text-blue-900 focus:outline-none" value="0">
                     </div>
 
-                    <!-- ALERTA VENCIMIENTO -->
                     <div class="bg-amber-50 p-2.5 rounded-xl border border-amber-300 lg:col-span-2">
                         <label class="block font-bold text-amber-900 mb-1">🚨 ALERTA VENCIMIENTO</label>
                         <input type="text" id="input-alerta" readonly class="w-full border border-amber-400 rounded-lg p-2 bg-white font-bold text-slate-900 focus:outline-none">
@@ -293,7 +266,7 @@
                         <tbody id="tabla-body" class="divide-y divide-slate-200 bg-white">
                             <tr id="row-loading">
                                 <td colspan="19" class="px-4 py-8 text-center text-slate-500 font-bold">
-                                    🔄 Conectando con servidor ultrarrápido...
+                                    🔄 Conectando con servidor...
                                 </td>
                             </tr>
                         </tbody>
@@ -303,17 +276,17 @@
 
         </div>
 
-        <!-- CONTENEDOR VISTA 2: DASHBOARD INTERACTIVO 3D -->
+        <!-- CONTENEDOR VISTA 2: DASHBOARD ANALÍTICO -->
         <div id="vista-dashboard" class="hidden space-y-6">
             <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex justify-between items-center flex-wrap gap-3">
                 <div>
                     <h2 class="font-black text-mennar-navy text-base flex items-center">
-                        <i data-lucide="box" class="w-5 h-5 mr-2 text-emerald-600"></i> Dashboard Analítico en 3D
+                        <i data-lucide="bar-chart-2" class="w-5 h-5 mr-2 text-emerald-600"></i> Dashboard Analítico
                     </h2>
-                    <p class="text-xs text-slate-500">Métricas dinámicas tridimensionales generadas con la paleta oficial de Mennar S.A.S.</p>
+                    <p class="text-xs text-slate-500">Métricas dinámicas generadas con la paleta oficial de Mennar S.A.S.</p>
                 </div>
                 <button type="button" onclick="actualizarDashboardGraficos()" class="text-xs bg-mennar-navy hover:bg-slate-800 text-white px-3.5 py-2 rounded-xl font-bold flex items-center shadow">
-                    <i data-lucide="rotate-cw" class="w-3.5 h-3.5 mr-1.5"></i> Renderizar 3D
+                    <i data-lucide="rotate-cw" class="w-3.5 h-3.5 mr-1.5"></i> Actualizar Métricas
                 </button>
             </div>
 
@@ -337,46 +310,56 @@
                 </div>
             </div>
 
-            <!-- GRÁFICOS 3D -->
+            <!-- GRÁFICAS DEL DASHBOARD -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                 
-                <!-- GRÁFICO 1: FUID 3D -->
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between chart-3d-container">
+                <!-- GRÁFICO 1: CUMPLIMIENTO FUID -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
                     <h3 class="text-xs font-black text-mennar-navy uppercase tracking-wider mb-2 flex items-center">
-                        <i data-lucide="pie-chart" class="w-4 h-4 mr-1.5 text-emerald-600"></i> Cumplimiento FUID (% IN) - Efecto 3D
+                        <i data-lucide="pie-chart" class="w-4 h-4 mr-1.5 text-emerald-600"></i> Cumplimiento FUID (% IN)
                     </h3>
                     <div class="relative h-64 flex justify-center items-center">
-                        <canvas id="chart-fuid" class="canvas-3d"></canvas>
+                        <canvas id="chart-fuid"></canvas>
                     </div>
                 </div>
 
-                <!-- GRÁFICO 2: CONTRATO 3D -->
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between chart-3d-container">
+                <!-- GRÁFICO 2: CONTRATO -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
                     <h3 class="text-xs font-black text-mennar-navy uppercase tracking-wider mb-2 flex items-center">
-                        <i data-lucide="layers" class="w-4 h-4 mr-1.5 text-purple-600"></i> Transferencias Por Contrato - Cilíndrico 3D
+                        <i data-lucide="layers" class="w-4 h-4 mr-1.5 text-purple-600"></i> Transferencias Por Contrato
                     </h3>
                     <div class="relative h-64">
-                        <canvas id="chart-contrato" class="canvas-3d"></canvas>
+                        <canvas id="chart-contrato"></canvas>
                     </div>
                 </div>
 
-                <!-- GRÁFICO 3: ESTADO GESTIÓN 3D -->
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between chart-3d-container">
+                <!-- GRÁFICO 3: NUEVO - PRODUCTIVIDAD POR RESPONSABLE Y FECHA (LÍNEAS) -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between md:col-span-2">
+                    <h3 class="text-xs font-black text-mennar-navy uppercase tracking-wider mb-2 flex items-center">
+                        <i data-lucide="trending-up" class="w-4 h-4 mr-1.5 text-amber-500"></i> Productividad Diario por Responsables de Archivo Central
+                    </h3>
+                    <div class="relative h-72">
+                        <canvas id="chart-lineas-responsables"></canvas>
+                    </div>
+                </div>
+
+                <!-- GRÁFICO 4: ESTADO DE GESTIÓN -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
                     <h3 class="text-xs font-black text-mennar-navy uppercase tracking-wider mb-2 flex items-center">
                         <i data-lucide="bar-chart-2" class="w-4 h-4 mr-1.5 text-blue-600"></i> Estado de Gestión Documental
                     </h3>
                     <div class="relative h-64">
-                        <canvas id="chart-estado" class="canvas-3d"></canvas>
+                        <canvas id="chart-estado"></canvas>
                     </div>
                 </div>
 
-                <!-- GRÁFICO 4: ALERTAS 3D -->
-                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between chart-3d-container">
+                <!-- GRÁFICO 5: SEMÁFORO DE ALERTAS -->
+                <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between">
                     <h3 class="text-xs font-black text-mennar-navy uppercase tracking-wider mb-2 flex items-center">
-                        <i data-lucide="shield-alert" class="w-4 h-4 mr-1.5 text-amber-500"></i> Semáforo de Alertas y Tiempos 3D
+                        <i data-lucide="shield-alert" class="w-4 h-4 mr-1.5 text-amber-500"></i> Semáforo de Alertas y Tiempos
                     </h3>
                     <div class="relative h-64 flex justify-center items-center">
-                        <canvas id="chart-alertas" class="canvas-3d"></canvas>
+                        <canvas id="chart-alertas"></canvas>
                     </div>
                 </div>
 
@@ -395,14 +378,11 @@
         let chartContratoInst = null;
         let chartEstadoInst = null;
         let chartAlertasInst = null;
+        let chartLineasInst = null;
         let vozReproducida = false;
 
-        // ============================================================================
-        // FUNCIONALIDAD DE SALUDO DE VOZ DE BIENVENIDA
-        // ============================================================================
         function reproducirSaludoVoz() {
             if (!('speechSynthesis' in window)) return;
-
             window.speechSynthesis.cancel();
 
             const textoSaludo = "¡Hola! Bienvenida a Control de Transferencias Documentales al Archivo Central.";
@@ -437,7 +417,6 @@
             }
         }, { once: true });
 
-        // BASE DE DATOS MAPEADA DE EMPLEADOS
         const baseEmpleados = [
             { nombre: "PEÑA BALLESTEROS CRISTIAN CAMILO", cargo: "AH03 ANALISTA DE INFORMACION Y DATOS", area: "01 PARQUE LOGISTICO", proceso: "Control Interno" },
             { nombre: "MUÑOZ ORDOÑEZ ANGIE LORENA", cargo: "AG00 LIDER DE GESTION ADMINISTRATIVA Y FINANCIERA", area: "01 PARQUE LOGISTICO", proceso: "Dispensación" },
@@ -994,7 +973,7 @@
         }
 
         // ============================================================================
-        // MOTOR DE DASHBOARD Y GRÁFICOS 3D
+        // DASHBOARD Y NUTRIDAS GRÁFICAS (CON GRÁFICO DE LÍNEAS POR FECHA Y RESPONSABLE)
         // ============================================================================
         function actualizarDashboardGraficos() {
             actualizarKPIs();
@@ -1023,6 +1002,41 @@
                 else porAlerta["🟢 A Tiempo"]++;
             });
 
+            // LÓGICA GRÁFICO DE LÍNEAS: ACUMULADO POR FECHA Y RESPONSABLE
+            const mapaFechasResponsables = {};
+            const setResponsables = new Set();
+
+            registrosLocales.forEach(r => {
+                const fecha = r.fecha ? r.fecha.split('T')[0] : "Sin Fecha";
+                const resp = r.responsable || "Maily Sandoval Reyes";
+
+                setResponsables.add(resp);
+
+                if (!mapaFechasResponsables[fecha]) {
+                    mapaFechasResponsables[fecha] = {};
+                }
+                mapaFechasResponsables[fecha][resp] = (mapaFechasResponsables[fecha][resp] || 0) + 1;
+            });
+
+            const fechasOrdenadas = Object.keys(mapaFechasResponsables).sort();
+            const listaResponsables = Array.from(setResponsables);
+            const coloresLineas = ['#00a878', '#0d2847', '#f59e0b', '#8b5cf6', '#ec4899'];
+
+            const datasetsLineas = listaResponsables.map((resp, idx) => {
+                const data = fechasOrdenadas.map(f => mapaFechasResponsables[f][resp] || 0);
+                return {
+                    label: resp,
+                    data: data,
+                    borderColor: coloresLineas[idx % coloresLineas.length],
+                    backgroundColor: coloresLineas[idx % coloresLineas.length],
+                    tension: 0.3,
+                    fill: false,
+                    pointRadius: 5,
+                    pointHoverRadius: 8
+                };
+            });
+
+            // 1. CUMPLIMIENTO FUID
             const ctxFuid = document.getElementById('chart-fuid').getContext('2d');
             if (chartFuidInst) chartFuidInst.destroy();
             chartFuidInst = new Chart(ctxFuid, {
@@ -1032,9 +1046,8 @@
                     datasets: [{
                         data: [fuidSi, fuidNo],
                         backgroundColor: ['#00a878', '#f43f5e'],
-                        borderWidth: 4,
-                        borderColor: '#ffffff',
-                        hoverOffset: 15
+                        borderWidth: 3,
+                        borderColor: '#ffffff'
                     }]
                 },
                 options: { 
@@ -1044,6 +1057,7 @@
                 }
             });
 
+            // 2. CONTRATO
             const ctxContrato = document.getElementById('chart-contrato').getContext('2d');
             if (chartContratoInst) chartContratoInst.destroy();
             chartContratoInst = new Chart(ctxContrato, {
@@ -1054,9 +1068,8 @@
                         label: 'N° Registros',
                         data: Object.values(porContrato),
                         backgroundColor: '#0d2847',
-                        borderRadius: 12,
-                        borderSkipped: false,
-                        barThickness: 32
+                        borderRadius: 8,
+                        barThickness: 28
                     }]
                 },
                 options: { 
@@ -1067,6 +1080,29 @@
                 }
             });
 
+            // 3. PRODUCTIVIDAD POR RESPONSABLE Y FECHA (GRÁFICO DE LÍNEAS)
+            const ctxLineas = document.getElementById('chart-lineas-responsables').getContext('2d');
+            if (chartLineasInst) chartLineasInst.destroy();
+            chartLineasInst = new Chart(ctxLineas, {
+                type: 'line',
+                data: {
+                    labels: fechasOrdenadas.length > 0 ? fechasOrdenadas : ['Sin Datos'],
+                    datasets: datasetsLineas.length > 0 ? datasetsLineas : [{ label: 'Sin Datos', data: [0] }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'top', labels: { font: { weight: 'bold' } } }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, ticks: { stepSize: 1 } },
+                        x: { grid: { color: '#f1f5f9' } }
+                    }
+                }
+            });
+
+            // 4. ESTADO DE GESTIÓN
             const ctxEstado = document.getElementById('chart-estado').getContext('2d');
             if (chartEstadoInst) chartEstadoInst.destroy();
             chartEstadoInst = new Chart(ctxEstado, {
@@ -1077,8 +1113,8 @@
                         label: 'Registros',
                         data: Object.values(porEstado),
                         backgroundColor: '#1e3a5f',
-                        borderRadius: 10,
-                        barThickness: 24
+                        borderRadius: 8,
+                        barThickness: 22
                     }]
                 },
                 options: { 
@@ -1089,6 +1125,7 @@
                 }
             });
 
+            // 5. ALERTAS
             const ctxAlertas = document.getElementById('chart-alertas').getContext('2d');
             if (chartAlertasInst) chartAlertasInst.destroy();
             chartAlertasInst = new Chart(ctxAlertas, {
@@ -1098,9 +1135,8 @@
                     datasets: [{
                         data: Object.values(porAlerta),
                         backgroundColor: ['#00a878', '#f59e0b', '#ef4444', '#0d2847'],
-                        borderWidth: 3,
-                        borderColor: '#ffffff',
-                        hoverOffset: 12
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
                     }]
                 },
                 options: { 
