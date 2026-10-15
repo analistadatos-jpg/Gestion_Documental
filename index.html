@@ -117,9 +117,14 @@
                         <input type="text" id="input-radicado" readonly placeholder="Auto por Servidor" class="w-full border border-slate-300 rounded-lg p-2 bg-white font-mono font-bold text-indigo-700 focus:outline-none">
                     </div>
 
+                    <!-- RESPONSABLE ARCHIVO CENTRAL (LISTA DESPLEGABLE) -->
                     <div class="bg-emerald-50 p-2.5 rounded-xl border border-emerald-200">
                         <label class="block font-bold text-emerald-900 mb-1">👤 RESPONSABLE ARCHIVO CENTRAL</label>
-                        <input type="text" id="input-responsable" readonly class="w-full border border-emerald-300 rounded-lg p-2 bg-white font-bold text-emerald-800 focus:outline-none">
+                        <select id="input-responsable" required class="w-full border border-emerald-300 rounded-lg p-2 bg-white font-bold text-emerald-800 focus:outline-none cursor-pointer">
+                            <option value="Maily Sandoval Reyes" selected>Maily Sandoval Reyes</option>
+                            <option value="Thristan Stiven Quintana Leon">Thristan Stiven Quintana Leon</option>
+                            <option value="Ayda Coordinadora">Ayda Coordinadora</option>
+                        </select>
                     </div>
 
                     <div>
@@ -333,7 +338,7 @@
                     </div>
                 </div>
 
-                <!-- GRÁFICO 3: NUEVO - PRODUCTIVIDAD POR RESPONSABLE Y FECHA (LÍNEAS) -->
+                <!-- GRÁFICO 3: PRODUCTIVIDAD POR RESPONSABLE Y FECHA (LÍNEAS) -->
                 <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm flex flex-col justify-between md:col-span-2">
                     <h3 class="text-xs font-black text-mennar-navy uppercase tracking-wider mb-2 flex items-center">
                         <i data-lucide="trending-up" class="w-4 h-4 mr-1.5 text-amber-500"></i> Productividad Diario por Responsables de Archivo Central
@@ -372,7 +377,6 @@
         const API_URL = "https://script.google.com/macros/s/AKfycbyzE8RKJg-1T8QwQnku8uh_QzqfsmKRlOhwacF2LcKXuUH5ChXPslmOboP83VnE1Dxj/exec";
 
         let registrosLocales = JSON.parse(localStorage.getItem('registros_control_documental')) || [];
-        const RESPONSABLE_PREDETERMINADO = "Maily Sandoval Reyes";
 
         let chartFuidInst = null;
         let chartContratoInst = null;
@@ -485,7 +489,6 @@
             const hoy = new Date();
             const fechaHoyStr = hoy.getFullYear() + '-' + String(hoy.getMonth() + 1).padStart(2, '0') + '-' + String(hoy.getDate()).padStart(2, '0');
             document.getElementById('input-fecha').value = fechaHoyStr;
-            document.getElementById('input-responsable').value = RESPONSABLE_PREDETERMINADO;
 
             calcularDiasGestionAutomatico();
             renderTabla(registrosLocales);
@@ -963,6 +966,7 @@
             document.getElementById('input-cantidad').value = '';
             document.getElementById('input-detalle-estado').value = '';
             document.getElementById('input-fecha-cierre').value = '';
+            document.getElementById('input-responsable').value = 'Maily Sandoval Reyes';
 
             poblarSelectoresIniciales();
 
