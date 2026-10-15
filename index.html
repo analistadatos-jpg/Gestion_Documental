@@ -48,7 +48,7 @@
         <!-- ENCABEZADO INSTITUCIONAL MENNAR S.A.S. -->
         <div class="bg-mennar-navy text-white p-4 rounded-2xl shadow-lg flex justify-between items-center flex-wrap gap-4 border-b-4 border-amber-500">
             <div class="flex items-center space-x-3">
-                <div class="bg-emerald-500 p-2.5 rounded-xl shadow-inner cursor-pointer" onclick="reproducirSaludoVoz()" title="Escuchar saludo nuevamente">
+                <div class="bg-emerald-500 p-2.5 rounded-xl shadow-inner cursor-pointer" onclick="reproducirSaludoVoz()" title="Escuchar saludo de voz">
                     <i data-lucide="volume-2" class="w-7 h-7 text-white animate-pulse"></i>
                 </div>
                 <div>
@@ -70,8 +70,8 @@
                 <button type="button" onclick="cargarDatosDesdeDrive(true)" class="bg-amber-500 hover:bg-amber-400 text-slate-950 px-3.5 py-2 rounded-xl text-xs font-black transition flex items-center shadow">
                     <i data-lucide="zap" class="w-4 h-4 mr-1.5"></i> Sync Ultrarrápida
                 </button>
-                <button type="button" onclick="reproducirSaludoVoz()" class="bg-emerald-700 hover:bg-emerald-600 text-white p-2 rounded-xl shadow transition" title="Reproducir Voz de Bienvenida">
-                    <i data-lucide="volume-2" class="w-4 h-4"></i>
+                <button type="button" onclick="vaciarTodoGlobal()" class="bg-rose-700 hover:bg-rose-600 text-white px-3.5 py-2 rounded-xl text-xs font-black transition flex items-center shadow" title="Vaciar toda la base de datos de la App y de Google Drive">
+                    <i data-lucide="trash-2" class="w-4 h-4 mr-1.5"></i> Vaciar Todo Global
                 </button>
             </div>
         </div>
@@ -287,11 +287,12 @@
                                 <th class="px-3 py-2.5 bg-slate-100 text-slate-800 text-center">Días Hábiles</th>
                                 <th class="px-3 py-2.5 bg-slate-100 text-slate-800 text-center">Alerta Vencimiento</th>
                                 <th class="px-3 py-2.5 bg-emerald-800 text-white text-center">Fecha Cierre</th>
+                                <th class="px-3 py-2.5 bg-rose-900 text-white text-center">Acción Borrar</th>
                             </tr>
                         </thead>
                         <tbody id="tabla-body" class="divide-y divide-slate-200 bg-white">
                             <tr id="row-loading">
-                                <td colspan="18" class="px-4 py-8 text-center text-slate-500 font-bold">
+                                <td colspan="19" class="px-4 py-8 text-center text-slate-500 font-bold">
                                     🔄 Conectando con servidor ultrarrápido...
                                 </td>
                             </tr>
@@ -397,23 +398,22 @@
         let vozReproducida = false;
 
         // ============================================================================
-        // FUNCIONALIDAD DE SALUDO POR VOZ
+        // FUNCIONALIDAD DE SALUDO DE VOZ DE BIENVENIDA
         // ============================================================================
         function reproducirSaludoVoz() {
             if (!('speechSynthesis' in window)) return;
 
-            window.speechSynthesis.cancel(); // Cancelar cualquier audio anterior
+            window.speechSynthesis.cancel();
 
             const textoSaludo = "¡Hola! Bienvenida a Control de Transferencias Documentales al Archivo Central.";
             const mensaje = new SpeechSynthesisUtterance(textoSaludo);
 
             mensaje.lang = 'es-ES';
-            mensaje.rate = 0.95; // Velocidad pausada y amable
-            mensaje.pitch = 1.1; // Tono ligeramente cálido y alegre
+            mensaje.rate = 0.95;
+            mensaje.pitch = 1.1;
             mensaje.volume = 1.0;
 
             const voces = window.speechSynthesis.getVoices();
-            // Buscar voz en español, dando prioridad a voces nativas o femeninas amables
             const vozEspanol = voces.find(v => (v.lang.includes('es') || v.lang.includes('ES')) && (v.name.includes('Google') || v.name.includes('Sabina') || v.name.includes('Monica') || v.name.includes('Paulina') || v.name.includes('Helena') || v.name.includes('Natural'))) 
                             || voces.find(v => v.lang.includes('es'));
 
@@ -425,21 +425,19 @@
             vozReproducida = true;
         }
 
-        // Cargar voces en memoria cuando el navegador esté listo
         if ('speechSynthesis' in window) {
             window.speechSynthesis.onvoiceschanged = () => {
                 window.speechSynthesis.getVoices();
             };
         }
 
-        // Iniciar saludo con el primer clic/interacción del usuario por política de navegadores
         document.addEventListener('click', () => {
             if (!vozReproducida) {
                 reproducirSaludoVoz();
             }
         }, { once: true });
 
-        // BASE DE DATOS DE EMPLEADOS MAPEADA
+        // BASE DE DATOS MAPEADA DE EMPLEADOS
         const baseEmpleados = [
             { nombre: "PEÑA BALLESTEROS CRISTIAN CAMILO", cargo: "AH03 ANALISTA DE INFORMACION Y DATOS", area: "01 PARQUE LOGISTICO", proceso: "Control Interno" },
             { nombre: "MUÑOZ ORDOÑEZ ANGIE LORENA", cargo: "AG00 LIDER DE GESTION ADMINISTRATIVA Y FINANCIERA", area: "01 PARQUE LOGISTICO", proceso: "Dispensación" },
@@ -512,7 +510,7 @@
 
             calcularDiasGestionAutomatico();
             renderTabla(registrosLocales);
-            cargarDatosDesdeDrive();
+            cargarDatosDesdeDrive(false);
 
             setInterval(() => {
                 cargarDatosDesdeDrive(false);
@@ -726,13 +724,11 @@
                         listaRegistros = data;
                     }
 
-                    if (listaRegistros.length > 0) {
-                        registrosLocales = listaRegistros;
-                        localStorage.setItem('registros_control_documental', JSON.stringify(registrosLocales));
-                        renderTabla(registrosLocales);
-                        if (forzarNotificacion) {
-                            alert("⚡ Sincronización realizada en tiempo real con Google Drive.");
-                        }
+                    registrosLocales = listaRegistros;
+                    localStorage.setItem('registros_control_documental', JSON.stringify(registrosLocales));
+                    renderTabla(registrosLocales);
+                    if (forzarNotificacion) {
+                        alert("⚡ Sincronización realizada en tiempo real con Google Drive.");
                     }
                 })
                 .catch(() => {
@@ -745,7 +741,7 @@
             tbody.innerHTML = '';
 
             if (!registros || registros.length === 0) {
-                tbody.innerHTML = `<tr><td colspan="18" class="p-4 text-center text-slate-400 font-bold">Sin registros guardados.</td></tr>`;
+                tbody.innerHTML = `<tr><td colspan="19" class="p-4 text-center text-slate-400 font-bold">Sin registros guardados.</td></tr>`;
                 document.getElementById('contador-registros').innerText = "0 registros";
                 generarRadicadoInmediato();
                 actualizarKPIs();
@@ -813,12 +809,18 @@
                                onchange="actualizarFechaCierreMatriz('${r.radicado}', this.value)" 
                                class="bg-transparent font-semibold text-emerald-900 text-center border-b border-emerald-500 focus:outline-none focus:border-emerald-800 cursor-pointer">
                     </td>
+                    <td class="px-3 py-2.5 text-center">
+                        <button onclick="eliminarRegistroGlobal('${r.radicado}')" class="bg-rose-600 hover:bg-rose-700 text-white font-bold px-2 py-1 rounded text-[10px] shadow transition flex items-center justify-center mx-auto" title="Eliminar de la App y Google Drive">
+                            <i data-lucide="trash-2" class="w-3.5 h-3.5 mr-1"></i> Borrar
+                        </button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
 
             document.getElementById('contador-registros').innerText = `${registros.length} registro(s) sincronizado(s)`;
             actualizarKPIs();
+            lucide.createIcons();
         }
 
         function actualizarFuidMatriz(radicado, nuevoValorFuid) {
@@ -878,6 +880,39 @@
                     body: JSON.stringify(payload)
                 }).then(() => {
                     cargarDatosDesdeDrive(false);
+                });
+            }
+        }
+
+        function eliminarRegistroGlobal(radicado) {
+            if (confirm(`¿Confirma eliminar el radicado ${radicado} tanto de la App como de Google Drive?`)) {
+                registrosLocales = registrosLocales.filter(r => r.radicado !== radicado);
+                localStorage.setItem('registros_control_documental', JSON.stringify(registrosLocales));
+                renderTabla(registrosLocales);
+
+                fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ accion: "eliminar", radicado: radicado })
+                }).then(() => {
+                    setTimeout(() => cargarDatosDesdeDrive(false), 800);
+                });
+            }
+        }
+
+        function vaciarTodoGlobal() {
+            if (confirm("⚠️ ¿Desea eliminar TODOS los registros de la App y de Google Drive?")) {
+                registrosLocales = [];
+                localStorage.removeItem('registros_control_documental');
+                renderTabla(registrosLocales);
+
+                fetch(API_URL, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                    body: JSON.stringify({ accion: "borrar_todo" })
+                }).then(() => {
+                    alert("✅ Base de datos vaciada globalmente.");
+                    setTimeout(() => cargarDatosDesdeDrive(false), 800);
                 });
             }
         }
@@ -959,7 +994,7 @@
         }
 
         // ============================================================================
-        // DASHBOARD 3D
+        // MOTOR DE DASHBOARD Y GRÁFICOS 3D
         // ============================================================================
         function actualizarDashboardGraficos() {
             actualizarKPIs();
