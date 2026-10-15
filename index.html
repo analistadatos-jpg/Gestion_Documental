@@ -117,7 +117,6 @@
                         <input type="text" id="input-radicado" readonly placeholder="Auto por Servidor" class="w-full border border-slate-300 rounded-lg p-2 bg-white font-mono font-bold text-indigo-700 focus:outline-none">
                     </div>
 
-                    <!-- RESPONSABLE ARCHIVO CENTRAL (LISTA DESPLEGABLE) -->
                     <div class="bg-emerald-50 p-2.5 rounded-xl border border-emerald-200">
                         <label class="block font-bold text-emerald-900 mb-1">👤 RESPONSABLE ARCHIVO CENTRAL</label>
                         <select id="input-responsable" required class="w-full border border-emerald-300 rounded-lg p-2 bg-white font-bold text-emerald-800 focus:outline-none cursor-pointer">
@@ -259,8 +258,8 @@
                                 <th class="px-3 py-2.5 bg-yellow-400 text-slate-950 font-bold">Unidad</th>
                                 <th class="px-3 py-2.5 bg-slate-100 text-slate-800">Series/Subseries</th>
                                 <th class="px-3 py-2.5 bg-slate-100 text-slate-800 text-center">Cant.</th>
-                                <th class="px-3 py-2.5 bg-emerald-800 text-white">Responsable Archivo</th>
-                                <th class="px-3 py-2.5 bg-slate-100 text-slate-800">Estado de Gestión</th>
+                                <th class="px-3 py-2.5 bg-emerald-800 text-white text-center">Responsable Archivo</th>
+                                <th class="px-3 py-2.5 bg-slate-100 text-slate-800 text-center">Estado de Gestión</th>
                                 <th class="px-3 py-2.5 bg-slate-100 text-slate-800">Detalle Estado</th>
                                 <th class="px-3 py-2.5 bg-slate-100 text-slate-800 text-center">Días Hábiles</th>
                                 <th class="px-3 py-2.5 bg-slate-100 text-slate-800 text-center">Alerta Vencimiento</th>
@@ -384,6 +383,12 @@
         let chartAlertasInst = null;
         let chartLineasInst = null;
         let vozReproducida = false;
+
+        // FUNCIÓN CLAVE PARA LIMPIAR FORMATO ISO FECHA (YYYY-MM-DD)
+        function limpiarFechaFormato(strFecha) {
+            if (!strFecha || strFecha === "") return "";
+            return String(strFecha).split('T')[0];
+        }
 
         function reproducirSaludoVoz() {
             if (!('speechSynthesis' in window)) return;
@@ -621,8 +626,9 @@
         }
 
         function obtenerObjetoFecha(strFecha) {
-            if (!strFecha || strFecha.trim() === "") return null;
-            const partes = strFecha.split('T')[0].split('-');
+            if (!strFecha || String(strFecha).trim() === "") return null;
+            const fechaLimpia = String(strFecha).split('T')[0];
+            const partes = fechaLimpia.split('-');
             if (partes.length === 3) {
                 return new Date(Number(partes[0]), Number(partes[1]) - 1, Number(partes[2]));
             }
@@ -706,7 +712,13 @@
                         listaRegistros = data;
                     }
 
-                    registrosLocales = listaRegistros;
+                    // Limpieza preventiva de fechas al recibir datos
+                    registrosLocales = listaRegistros.map(r => ({
+                        ...r,
+                        fecha: limpiarFechaFormato(r.fecha),
+                        fechaCierre: limpiarFechaFormato(r.fechaCierre)
+                    }));
+
                     localStorage.setItem('registros_control_documental', JSON.stringify(registrosLocales));
                     renderTabla(registrosLocales);
                     if (forzarNotificacion) {
@@ -736,10 +748,13 @@
             listaInvertida.forEach((r, idx) => {
                 const tr = document.createElement('tr');
                 const radicadoFormateado = normalizarRadicado(r.radicado, registros.length - idx);
-                const diasCalculados = calcularDiasHabilesEntreFechas(r.fecha, r.fechaCierre);
+                const fechaLimpiaRecibido = limpiarFechaFormato(r.fecha);
+                const fechaLimpiaCierre = limpiarFechaFormato(r.fechaCierre);
+
+                const diasCalculados = calcularDiasHabilesEntreFechas(fechaLimpiaRecibido, fechaLimpiaCierre);
 
                 let alertaCalculada = r.alerta || "";
-                const esCerrado = (r.fechaCierre && String(r.fechaCierre).trim() !== "") || r.estado === "Archivado Definitivo";
+                const esCerrado = (fechaLimpiaCierre && fechaLimpiaCierre.trim() !== "") || r.estado === "Archivado Definitivo";
 
                 if (esCerrado) {
                     alertaCalculada = "✅ Cerrado";
@@ -752,6 +767,8 @@
                 }
 
                 const cuentaFuidVal = r.cuentaFuid || "NO";
+                const responsableVal = r.responsable || "Maily Sandoval Reyes";
+                const estadoVal = r.estado || "Por Verificar";
 
                 tr.className = esCerrado 
                     ? "bg-emerald-50/80 hover:bg-emerald-100 transition border-b border-emerald-200 divide-x divide-emerald-100 text-emerald-950 font-medium" 
@@ -763,8 +780,11 @@
                     <td class="px-3 py-2.5 font-bold text-purple-900 bg-purple-50/50">${r.contrato || ''}</td>
                     <td class="px-3 py-2.5 font-mono font-bold text-indigo-700">${radicadoFormateado}</td>
                     <td class="px-3 py-2.5 font-medium">${r.cliente || ''}</td>
-                    <td class="px-3 py-2.5 text-center">${r.fecha || ''}</td>
                     
+                    <!-- FECHA DE RECIBIDO LIMPICITA (AAAA-MM-DD) -->
+                    <td class="px-3 py-2.5 text-center font-bold text-slate-700">${fechaLimpiaRecibido}</td>
+                    
+                    <!-- EDICIÓN EN MATRIZ: FUID -->
                     <td class="px-3 py-2.5 text-center">
                         <select onchange="actualizarFuidMatriz('${r.radicado}', this.value)" 
                                 class="text-[10px] font-black rounded-lg px-2.5 py-1 border cursor-pointer focus:outline-none shadow-sm ${cuentaFuidVal === 'SI' ? 'bg-emerald-100 text-emerald-800 border-emerald-400' : 'bg-rose-100 text-rose-800 border-rose-400'}">
@@ -780,14 +800,35 @@
                     <td class="px-3 py-2.5 font-semibold">${r.unidad || ''}</td>
                     <td class="px-3 py-2.5">${r.series || ''}</td>
                     <td class="px-3 py-2.5 text-center font-bold text-slate-800">${r.cantidad !== undefined && r.cantidad !== null && !isNaN(r.cantidad) ? Number(r.cantidad).toLocaleString() : '0'}</td>
-                    <td class="px-3 py-2.5 font-bold text-emerald-800">${r.responsable || ''}</td>
-                    <td class="px-3 py-2.5"><span class="bg-slate-100 text-slate-700 px-2 py-0.5 rounded font-semibold">${r.estado || ''}</span></td>
+                    
+                    <!-- EDICIÓN EN MATRIZ: RESPONSABLE ARCHIVO CENTRAL -->
+                    <td class="px-3 py-2.5 text-center">
+                        <select onchange="actualizarResponsableMatriz('${r.radicado}', this.value)" 
+                                class="text-[10px] font-bold rounded-lg px-2 py-1 border border-emerald-400 bg-emerald-50 text-emerald-900 cursor-pointer focus:outline-none shadow-sm">
+                            <option value="Maily Sandoval Reyes" ${responsableVal === 'Maily Sandoval Reyes' ? 'selected' : ''}>Maily Sandoval Reyes</option>
+                            <option value="Thristan Stiven Quintana Leon" ${responsableVal === 'Thristan Stiven Quintana Leon' ? 'selected' : ''}>Thristan Stiven Quintana Leon</option>
+                            <option value="Ayda Coordinadora" ${responsableVal === 'Ayda Coordinadora' ? 'selected' : ''}>Ayda Coordinadora</option>
+                        </select>
+                    </td>
+
+                    <!-- EDICIÓN EN MATRIZ: ESTADO DE GESTIÓN -->
+                    <td class="px-3 py-2.5 text-center">
+                        <select onchange="actualizarEstadoMatriz('${r.radicado}', this.value)" 
+                                class="text-[10px] font-bold rounded-lg px-2 py-1 border border-slate-300 bg-white text-slate-800 cursor-pointer focus:outline-none shadow-sm">
+                            <option value="Por Verificar" ${estadoVal === 'Por Verificar' ? 'selected' : ''}>Por Verificar</option>
+                            <option value="En Confrontación FUID" ${estadoVal === 'En Confrontación FUID' ? 'selected' : ''}>En Confrontación FUID</option>
+                            <option value="Archivado Definitivo" ${estadoVal === 'Archivado Definitivo' ? 'selected' : ''}>Archivado Definitivo</option>
+                        </select>
+                    </td>
+
                     <td class="px-3 py-2.5 text-slate-600">${r.detalleEstado || ''}</td>
                     <td class="px-3 py-2.5 text-center font-bold text-blue-900">${diasCalculados}</td>
                     <td class="px-3 py-2.5 text-center font-bold">${alertaCalculada}</td>
+                    
+                    <!-- EDICIÓN EN MATRIZ: FECHA DE CIERRE -->
                     <td class="px-3 py-2.5 text-center">
                         <input type="date" 
-                               value="${r.fechaCierre || ''}" 
+                               value="${fechaLimpiaCierre}" 
                                onchange="actualizarFechaCierreMatriz('${r.radicado}', this.value)" 
                                class="bg-transparent font-semibold text-emerald-900 text-center border-b border-emerald-500 focus:outline-none focus:border-emerald-800 cursor-pointer">
                     </td>
@@ -809,33 +850,39 @@
             const registro = registrosLocales.find(r => r.radicado === radicado);
             if (registro) {
                 registro.cuentaFuid = nuevoValorFuid;
-                localStorage.setItem('registros_control_documental', JSON.stringify(registrosLocales));
-                renderTabla(registrosLocales);
+                guardarYEnviarSincronizacion({ accion: "actualizar", radicado: radicado, cuentaFuid: nuevoValorFuid });
+            }
+        }
 
-                const payload = {
-                    accion: "actualizar",
-                    radicado: radicado,
-                    cuentaFuid: nuevoValorFuid
-                };
+        function actualizarResponsableMatriz(radicado, nuevoResponsable) {
+            const registro = registrosLocales.find(r => r.radicado === radicado);
+            if (registro) {
+                registro.responsable = nuevoResponsable;
+                guardarYEnviarSincronizacion({ accion: "actualizar", radicado: radicado, responsable: nuevoResponsable });
+            }
+        }
 
-                fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(payload)
-                }).then(() => {
-                    cargarDatosDesdeDrive(false);
-                });
+        function actualizarEstadoMatriz(radicado, nuevoEstado) {
+            const registro = registrosLocales.find(r => r.radicado === radicado);
+            if (registro) {
+                registro.estado = nuevoEstado;
+                if (nuevoEstado === "Archivado Definitivo") {
+                    registro.alerta = "✅ Cerrado";
+                }
+                guardarYEnviarSincronizacion({ accion: "actualizar", radicado: radicado, estado: nuevoEstado, alerta: registro.alerta });
             }
         }
 
         function actualizarFechaCierreMatriz(radicado, nuevaFecha) {
             const registro = registrosLocales.find(r => r.radicado === radicado);
             if (registro) {
-                registro.fechaCierre = nuevaFecha;
-                const diasHabiles = calcularDiasHabilesEntreFechas(registro.fecha, nuevaFecha);
+                const fechaLimpia = limpiarFechaFormato(nuevaFecha);
+                registro.fechaCierre = fechaLimpia;
+
+                const diasHabiles = calcularDiasHabilesEntreFechas(registro.fecha, fechaLimpia);
                 registro.dias = diasHabiles > 0 ? diasHabiles : 0;
                 
-                if (nuevaFecha || registro.estado === "Archivado Definitivo") {
+                if (fechaLimpia || registro.estado === "Archivado Definitivo") {
                     registro.alerta = "✅ Cerrado";
                 } else if (registro.dias >= 6) {
                     registro.alerta = "🔴 Vencido";
@@ -845,25 +892,27 @@
                     registro.alerta = "🟢 A Tiempo";
                 }
 
-                localStorage.setItem('registros_control_documental', JSON.stringify(registrosLocales));
-                renderTabla(registrosLocales);
-
-                const payload = {
-                    accion: "actualizar",
-                    radicado: radicado,
-                    fechaCierre: nuevaFecha,
-                    dias: registro.dias,
-                    alerta: registro.alerta
-                };
-
-                fetch(API_URL, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                    body: JSON.stringify(payload)
-                }).then(() => {
-                    cargarDatosDesdeDrive(false);
+                guardarYEnviarSincronizacion({ 
+                    accion: "actualizar", 
+                    radicado: radicado, 
+                    fechaCierre: fechaLimpia, 
+                    dias: registro.dias, 
+                    alerta: registro.alerta 
                 });
             }
+        }
+
+        function guardarYEnviarSincronizacion(payload) {
+            localStorage.setItem('registros_control_documental', JSON.stringify(registrosLocales));
+            renderTabla(registrosLocales);
+
+            fetch(API_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'text/plain;charset=utf-8' },
+                body: JSON.stringify(payload)
+            }).then(() => {
+                cargarDatosDesdeDrive(false);
+            });
         }
 
         function eliminarRegistroGlobal(radicado) {
@@ -913,7 +962,7 @@
                 contrato: document.getElementById('input-contrato').value,
                 radicado: document.getElementById('input-radicado').value,
                 cliente: document.getElementById('input-cliente').value,
-                fecha: document.getElementById('input-fecha').value,
+                fecha: limpiarFechaFormato(document.getElementById('input-fecha').value),
                 cuentaFuid: document.getElementById('input-cuenta-fuid').value,
                 proceso: document.getElementById('input-proceso').value,
                 funcionario: document.getElementById('input-funcionario').value,
@@ -928,7 +977,7 @@
                 detalleEstado: document.getElementById('input-detalle-estado').value,
                 dias: document.getElementById('input-dias').value,
                 alerta: document.getElementById('input-alerta').value,
-                fechaCierre: document.getElementById('input-fecha-cierre').value
+                fechaCierre: limpiarFechaFormato(document.getElementById('input-fecha-cierre').value)
             };
 
             registrosLocales.push(nuevoRegistro);
@@ -1011,7 +1060,7 @@
             const setResponsables = new Set();
 
             registrosLocales.forEach(r => {
-                const fecha = r.fecha ? r.fecha.split('T')[0] : "Sin Fecha";
+                const fecha = limpiarFechaFormato(r.fecha) || "Sin Fecha";
                 const resp = r.responsable || "Maily Sandoval Reyes";
 
                 setResponsables.add(resp);
